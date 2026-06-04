@@ -1,1 +1,335 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolphin0x | Private Portal</title>
+    <style>
+        :root {
+            --bg-color: #000000;
+            --panel-bg: rgba(5, 5, 15, 0.95);
+            --accent-cyan: #00f2fe;
+            --accent-pink: #ff007f;
+            --border-glow: 0 0 15px rgba(0, 242, 254, 0.3);
+            --text-glow: 0 0 8px #00f2fe;
+        }
 
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--bg-color);
+            color: var(--accent-cyan);
+            font-family: 'Courier New', Courier, monospace;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        body::before {
+            content: " "; display: block; position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
+            z-index: 9999; background-size: 100% 4px; pointer-events: none;
+        }
+
+        .app-container {
+            width: 100%; max-width: 900px; min-height: 80vh; height: 85vh;
+            border: 3px solid var(--accent-cyan); box-shadow: var(--border-glow);
+            background: #020205; display: flex; flex-direction: column; z-index: 10;
+        }
+
+        /* AUTH / LOGIN SCHERM */
+        .auth-screen {
+            display: flex; flex-direction: column; align-items: center;
+            justify-content: center; flex-grow: 1; padding: 40px; text-align: center;
+        }
+        .auth-box {
+            background: var(--panel-bg); border: 2px solid var(--accent-cyan);
+            padding: 30px; max-width: 400px; width: 100%; box-shadow: 5px 5px 0px rgba(0, 242, 254, 0.2);
+        }
+
+        /* PORTAL CHAT INTERFACE */
+        .portal-interface { display: none; flex-grow: 1; flex-direction: row; height: calc(100% - 90px); }
+        
+        header {
+            background: #000; padding: 20px; border-bottom: 3px solid var(--accent-cyan);
+            display: flex; align-items: center; justify-content: space-between; height: 50px;
+        }
+        .header-title-box { display: flex; align-items: center; gap: 15px; }
+        .header-dolphin { width: 45px; height: 45px; filter: drop-shadow(0 0 8px var(--accent-cyan)); }
+        header h1 { margin: 0; font-size: 1.8rem; letter-spacing: 3px; text-shadow: var(--text-glow); }
+
+        /* USER LIST (LINKS) */
+        .sidebar {
+            width: 30%; border-right: 2px solid var(--accent-cyan);
+            background: rgba(5, 5, 10, 0.5); overflow-y: auto; display: flex; flex-direction: column;
+        }
+        .sidebar-title { padding: 15px; border-bottom: 2px dashed #222; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; }
+        .user-item {
+            padding: 15px; border-bottom: 1px solid #111122; cursor: pointer; transition: all 0.2s;
+            color: #fff; text-overflow: ellipsis; overflow: hidden;
+        }
+        .user-item:hover, .user-item.active {
+            background: var(--accent-cyan); color: #000; font-weight: bold; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        /* CHAT WINDOW (RECHTS) */
+        .chat-area { width: 70%; display: flex; flex-direction: column; background: #000; }
+        .chat-header { padding: 15px; border-bottom: 2px dashed var(--accent-cyan); font-weight: bold; color: var(--accent-pink); }
+        .messages-feed { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        
+        /* BUBBLES */
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 75%; }
+        .msg-wrapper.me { align-self: flex-end; }
+        .msg-wrapper.them { align-self: flex-start; }
+        
+        .msg-bubble {
+            padding: 12px 18px; border: 2px solid var(--accent-cyan); font-size: 1rem; word-wrap: break-word;
+        }
+        .me .msg-bubble { background: var(--panel-bg); border-color: var(--accent-pink); color: #fff; box-shadow: 3px 3px 0px rgba(255, 0, 127, 0.2); }
+        .them .msg-bubble { background: #050515; border-color: var(--accent-cyan); color: #fff; box-shadow: 3px 3px 0px rgba(0, 242, 254, 0.2); }
+        .msg-meta { font-size: 0.75rem; color: #555; margin-top: 4px; padding: 0 5px; }
+        .me .msg-meta { text-align: right; }
+
+        /* INPUT AREA */
+        .chat-input-bar { padding: 20px; border-top: 2px solid var(--accent-cyan); display: flex; gap: 15px; background: #020205; }
+        
+        input[type="text"], input[type="email"], input[type="password"] {
+            background: #000; border: 2px solid var(--accent-cyan); padding: 12px;
+            color: #fff; font-family: 'Courier New', monospace; font-size: 1rem; box-sizing: border-box; outline: none;
+        }
+        .chat-input-bar input { flex-grow: 1; }
+        input:focus { border-color: var(--accent-pink); box-shadow: 0 0 8px var(--accent-pink); }
+
+        button {
+            background: transparent; color: var(--accent-cyan); border: 2px solid var(--accent-cyan);
+            padding: 10px 20px; font-family: inherit; font-weight: bold; text-transform: uppercase;
+            cursor: pointer; transition: all 0.2s;
+        }
+        button:hover { background: var(--accent-cyan); color: #000; box-shadow: 0 0 10px var(--accent-cyan); }
+        .btn-pink { color: var(--accent-pink); border-color: var(--accent-pink); }
+        .btn-pink:hover { background: var(--accent-pink); color: #000; box-shadow: 0 0 10px var(--accent-pink); }
+
+        .auth-toggle { margin-top: 15px; font-size: 0.85rem; color: #666; cursor: pointer; text-decoration: underline; }
+    </style>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDocs, collection, addDoc, query, where, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // ⚠️ VERVANG DEZE GEGEVENS MET JOUW EIGEN FIREBASE CONFIG CONFIGURATIE DIE JE BIJ STAP 1 HEBT GEKOPIEERD!
+        // Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
+  authDomain: "dolphin0x.firebaseapp.com",
+  projectId: "dolphin0x",
+  storageBucket: "dolphin0x.firebasestorage.app",
+  messagingSenderId: "397971950369",
+  appId: "1:397971950369:web:06c65ad929479656a10c60",
+  measurementId: "G-KCEJDSHZFL"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+
+        // --- AUTHENTICATION LOGICA ---
+        window.handleAuth = async function() {
+            const email = document.getElementById("authEmail").value.trim();
+            const password = document.getElementById("authPassword").value.trim();
+            const username = document.getElementById("authUsername").value.trim();
+            const isRegister = document.getElementById("authTitle").innerText === "REGISTER";
+
+            if(!email || !password || (isRegister && !username)) {
+                alert("ERROR: FILL IN ALL FIELDS."); return;
+            }
+
+            try {
+                if (isRegister) {
+                    // Account aanmaken
+                    const res = await createUserWithEmailAndPassword(auth, email, password);
+                    // Profiel opslaan in database
+                    await setDoc(doc(db, "users", res.user.uid), {
+                        uid: res.user.uid,
+                        username: username,
+                        email: email
+                    });
+                } else {
+                    // Inloggen
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) {
+                alert("FIREBASE ERROR: " + err.message);
+            }
+        };
+
+        // Luister of er iemand is ingelogd
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                currentUser = user;
+                document.getElementById("authScreen").style.display = "none";
+                document.getElementById("portalInterface").style.display = "flex";
+                document.getElementById("systemStatus").innerText = `[ USER: ${user.email.split('@')[0]} ]`;
+                loadUserList();
+            } else {
+                currentUser = null;
+                document.getElementById("authScreen").style.display = "flex";
+                document.getElementById("portalInterface").style.display = "none";
+                document.getElementById("systemStatus").innerText = "[ NET_OFFLINE ]";
+            }
+        });
+
+        window.logout = function() { signOut(auth); };
+
+        window.toggleAuthMode = function() {
+            const title = document.getElementById("authTitle");
+            const userGroup = document.getElementById("usernameGroup");
+            const toggleText = document.getElementById("authToggleText");
+            if (title.innerText === "LOGIN") {
+                title.innerText = "REGISTER";
+                userGroup.style.display = "block";
+                toggleText.innerText = "Already have an account? Login here.";
+            } else {
+                title.innerText = "LOGIN";
+                userGroup.style.display = "none";
+                toggleText.innerText = "New user? Create an encryption account.";
+            }
+        };
+
+        // --- GEBRUIKERS LIJST EN CHAT LOGICA ---
+        async function loadUserList() {
+            const querySnapshot = await getDocs(collection(db, "users"));
+            const userListEl = document.getElementById("userList");
+            userListEl.innerHTML = "";
+
+            querySnapshot.forEach((doc) => {
+                const userData = doc.data();
+                if(userData.uid === currentUser.uid) return; // Jezelf overslaan
+
+                const item = document.createElement("div");
+                item.className = "user-item";
+                item.innerText = `📡 @${userData.username}`;
+                item.onclick = () => selectUserChat(userData.uid, userData.username, item);
+                userListEl.appendChild(item);
+            });
+        }
+
+        function selectUserChat(targetUid, targetUsername, element) {
+            document.querySelectorAll(".user-item").forEach(el => el.classList.remove("active"));
+            element.classList.add("active");
+
+            activeChatUserId = targetUid;
+            document.getElementById("activeChatTarget").innerText = `SECURE CONNECTION TO: @${targetUsername}`;
+            
+            loadMessages(targetUid);
+        }
+
+        // Live unieke privé chat-id genereren (altijd dezelfde id tussen 2 specifieke personen)
+        function getChatId(uid1, uid2) {
+            return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+        }
+
+        function loadMessages(targetUid) {
+            if (unsubscribeChat) unsubscribeChat(); // Stop oude luisteraar
+
+            const chatId = getChatId(currentUser.uid, targetUid);
+            const q = query(collection(db, "chats", chatId, "messages"), orderBy("timestamp", "asc"));
+
+            // Live updates luisteraar (onSnapshot slaat alle data direct live op en update direct!)
+            unsubscribeChat = onSnapshot(q, (snapshot) => {
+                const box = document.getElementById("messagesBox");
+                box.innerHTML = "";
+
+                snapshot.forEach((doc) => {
+                    const msg = doc.data();
+                    const isMe = msg.senderId === currentUser.uid;
+
+                    const wrapper = document.createElement("div");
+                    wrapper.className = `msg-wrapper ${isMe ? 'me' : 'them'}`;
+                    
+                    wrapper.innerHTML = `
+                        <div class="msg-bubble">${escapeHTML(msg.text)}</div>
+                        <div class="msg-meta">${msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'}) : 'Zojuist'}</div>
+                    `;
+                    box.appendChild(wrapper);
+                });
+                box.scrollTop = box.scrollHeight; // Scroll naar beneden bij nieuw bericht
+            });
+        }
+
+        window.sendMessage = async function() {
+            const textInput = document.getElementById("messageInput");
+            const text = textInput.value.trim();
+            if(!text || !activeChatUserId) return;
+
+            const chatId = getChatId(currentUser.uid, activeChatUserId);
+            
+            // Sla direct online op in de subcollectie van deze unieke privé-chat
+            await addDoc(collection(db, "chats", chatId, "messages"), {
+                senderId: currentUser.uid,
+                text: text,
+                timestamp: new Date()
+            });
+
+            textInput.value = "";
+        };
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t));
+        }
+    </script>
+</head>
+<body>
+
+    <div class="app-container">
+        <header>
+            <div class="header-title-box">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHg3Mnd4cHZhcDN3cmFwZHlsMG10OHl0bTBxdXN4YnY2amN1M3N3MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/u00507MxtYmSk/giphy.gif" alt="Dolphin" class="header-dolphin">
+                <h1>Dolphin0x Portal</h1>
+            </div>
+            <div id="systemStatus" class="system-status">[ NET_OFFLINE ]</div>
+        </header>
+
+        <div id="authScreen" class="auth-screen">
+            <div class="auth-box">
+                <h2 id="authTitle" style="margin-top:0; letter-spacing:2px;">LOGIN</h2>
+                <div class="input-group" id="usernameGroup" style="display:none; margin-bottom:15px;">
+                    <input type="text" id="authUsername" placeholder="CHOOSE CYBERNAME..." style="width:100%;">
+                </div>
+                <div class="input-group" style="margin-bottom:15px;">
+                    <input type="email" id="authEmail" placeholder="ENTER EMAIL..." style="width:100%;">
+                </div>
+                <div class="input-group" style="margin-bottom:20px;">
+                    <input type="password" id="authPassword" placeholder="ENTER ENCRYPTION KEY..." style="width:100%;">
+                </div>
+                <button style="width:100%;" onclick="handleAuth()">ACCESS SYSTEM</button>
+                <div id="authToggleText" class="auth-toggle" onclick="toggleAuthMode()">New user? Create an encryption account.</div>
+            </div>
+        </div>
+
+        <div id="portalInterface" class="portal-interface">
+            <div class="sidebar">
+                <div class="sidebar-title">📡 Network Users</div>
+                <div id="userList" style="flex-grow:1; overflow-y:auto;"></div>
+                <button class="btn-pink" style="margin:10px; border-radius:0;" onclick="logout()">DISCONNECT</button>
+            </div>
+
+            <div class="chat-area">
+                <div id="activeChatTarget" class="chat-header">◀ SELECT A USER FROM THE NETWORK TO ESTABLISH CONNECTION</div>
+                <div id="messagesBox" class="messages-feed"></div>
+                <div class="chat-input-bar">
+                    <input type="text" id="messageInput" placeholder="TYPE SECURE ENCRYPTED MESSAGE..." onkeydown="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()">TRANSMIT</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
