@@ -128,6 +128,7 @@ import { getAnalytics } from "firebase/analytics";
 const firebaseConfig = {
   apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
   authDomain: "dolphin0x.firebaseapp.com",
+  databaseURL: "https://dolphin0x-default-rtdb.firebaseio.com",
   projectId: "dolphin0x",
   storageBucket: "dolphin0x.firebasestorage.app",
   messagingSenderId: "397971950369",
@@ -138,7 +139,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
-
         // --- AUTHENTICATION LOGICA ---
         window.handleAuth = async function() {
             const email = document.getElementById("authEmail").value.trim();
