@@ -3,173 +3,165 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x // Terminal Portal</title>
+    <title>Dolphin0x</title>
     <style>
         :root {
-            --bg-dark: #030704;
-            --term-green: #33ff33;
-            --term-dim: #116611;
-            --term-amber: #ffaa00;
-            --term-text: #e5ffe5;
-            --border-glow: 0 0 10px rgba(51, 255, 51, 0.3);
+            --bg-main: #f4f6f9;
+            --bg-panel: #ffffff;
+            --border-color: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --accent: #2563eb;
+            --accent-hover: #1d4ed8;
+            --accent-light: #eff6ff;
+            --danger: #ef4444;
         }
 
-        * { box-sizing: border-box; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
 
         body {
             margin: 0; padding: 0;
-            background-color: var(--bg-dark);
-            color: var(--term-green);
-            font-family: 'Courier New', Courier, monospace;
+            background-color: var(--bg-main);
+            color: var(--text-main);
             display: flex; justify-content: center; align-items: center;
             height: 100vh; overflow: hidden;
         }
 
-        
-        body::before {
-            content: " "; display: block; position: absolute;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.3) 50%);
-            z-index: 9999; background-size: 100% 5px; pointer-events: none;
+        .app-container {
+            width: 95vw; max-width: 1200px; height: 90vh;
+            border: 1px solid var(--border-color); border-radius: 12px;
+            background: var(--bg-panel); display: flex; flex-direction: column;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
 
-        
-        .terminal-container {
-            width: 95vw; max-width: 1000px; height: 90vh;
-            border: 2px solid var(--term-green); box-shadow: var(--border-glow);
-            background: #000000; display: flex; flex-direction: column; position: relative;
+        header {
+            background: var(--bg-panel); padding: 0 24px; border-bottom: 1px solid var(--border-color);
+            display: flex; align-items: center; justify-content: space-between; height: 70px;
+            border-top-left-radius: 12px; border-top-right-radius: 12px;
         }
+        .header-title-box { display: flex; align-items: center; gap: 12px; }
+        .header-dolphin { width: 32px; height: 32px; object-fit: contain; }
+        header h1 { margin: 0; font-size: 1.25rem; font-weight: 600; color: var(--text-main); }
+        .system-status { font-size: 0.85rem; font-weight: 500; color: var(--text-muted); background: var(--bg-main); padding: 6px 12px; border-radius: 20px; }
 
-        
-        .terminal-header {
-            padding: 12px 20px; border-bottom: 2px solid var(--term-green);
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(51, 255, 51, 0.05); font-weight: bold; font-size: 0.95rem;
-        }
-        .header-title { display: flex; align-items: center; gap: 12px; }
-        .header-dolphin { width: 30px; height: 30px; filter: drop-shadow(0 0 5px var(--term-green)) grayscale(100%); }
-
-        
-        .auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; }
+        .auth-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; background: var(--bg-main); }
         .auth-box {
-            border: 2px dashed var(--term-green); padding: 30px; max-width: 380px; width: 100%;
-            background: rgba(0, 10, 0, 0.8); text-align: center;
+            background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px;
+            padding: 32px; max-width: 400px; width: 100%; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
         }
-        .auth-box h2 { margin-top: 0; color: #fff; letter-spacing: 2px; font-size: 1.4rem; }
+        .auth-box h2 { margin-top: 0; font-size: 1.5rem; font-weight: 700; margin-bottom: 24px; text-align: center; }
 
-      
-        .portal-main { display: none; flex-grow: 1; height: calc(100% - 55px); position: relative; }
-
-     
-        .chat-view { width: 100%; height: 100%; display: flex; flex-direction: column; }
-        .chat-info-bar { 
-            padding: 12px 20px; background: rgba(51, 255, 51, 0.03); 
-            border-bottom: 1px solid var(--term-dim); display: flex; justify-content: space-between; align-items: center;
+        .portal-interface { display: none; flex-grow: 1; height: calc(100% - 70px); }
+        
+        .sidebar {
+            width: 300px; border-right: 1px solid var(--border-color);
+            background: var(--bg-panel); display: flex; flex-direction: column;
         }
-        .messages-log { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-
-      
-        .log-line { line-height: 1.4; font-size: 1rem; color: var(--term-text); word-wrap: break-word; }
-        .log-time { color: var(--term-dim); margin-right: 8px; }
-        .log-tag { font-weight: bold; margin-right: 8px; text-transform: uppercase; }
-        .log-tag.me { color: var(--term-green); }
-        .log-tag.them { color: var(--term-amber); }
-        .log-tag.global { color: #fff; text-shadow: 0 0 4px var(--term-green); }
-
-       
-        .terminal-prompt-bar { 
-            padding: 15px 20px; border-top: 2px solid var(--term-green); 
-            display: flex; align-items: center; gap: 12px; background: rgba(0,5,0,0.9);
+        .section-header { 
+            padding: 16px 20px; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;
         }
-        .prompt-symbol { font-weight: bold; font-size: 1.2rem; color: var(--term-green); animation: blink 1s infinite; }
+        
+        .channel-list, .user-list { overflow-y: auto; }
+        .chat-target-item {
+            padding: 12px 20px; cursor: pointer; transition: background 0.15s;
+            color: var(--text-main); display: flex; align-items: center; gap: 12px; font-size: 0.95rem;
+        }
+        .chat-target-item:hover { background: var(--bg-main); }
+        .chat-target-item.active { background: var(--accent-light); color: var(--accent); font-weight: 500; }
+
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #fafafa; }
+        .chat-header { 
+            padding: 16px 24px; border-bottom: 1px solid var(--border-color); 
+            font-weight: 600; font-size: 1rem; color: var(--text-main); background: var(--bg-panel);
+        }
+        .messages-feed { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
+        
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 70%; }
+        .msg-wrapper.me { align-self: flex-end; }
+        .msg-wrapper.them { align-self: flex-start; }
+        
+        .msg-author { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
+        .me .msg-author { text-align: right; }
+
+        .msg-bubble { padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; word-wrap: break-word; line-height: 1.5; }
+        .me .msg-bubble { background: var(--accent); color: #ffffff; border-bottom-right-radius: 2px; }
+        .them .msg-bubble { background: var(--bg-panel); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border-color); }
+        
+        .msg-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
+        .me .msg-meta { text-align: right; }
+
+        .chat-input-bar { padding: 16px 24px; border-top: 1px solid var(--border-color); display: flex; gap: 12px; background: var(--bg-panel); border-bottom-right-radius: 12px; }
         
         input[type="text"], input[type="email"], input[type="password"] {
-            background: transparent; border: none; color: var(--term-text);
-            font-family: 'Courier New', monospace; font-size: 1.05rem; flex-grow: 1; outline: none;
+            background: var(--bg-main); border: 1px solid var(--border-color); padding: 12px 16px; border-radius: 8px;
+            color: var(--text-main); font-size: 0.95rem; outline: none; width: 100%; transition: border 0.15s, box-shadow 0.15s;
         }
-        .auth-box input { border-bottom: 2px solid var(--term-dim); padding: 10px; margin-bottom: 15px; text-align: center; width: 100%; }
-        .auth-box input:focus { border-color: var(--term-green); box-shadow: var(--border-glow); }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15); }
+        .chat-input-bar input { flex-grow: 1; }
 
-       
-        .network-overlay {
-            position: absolute; top: 0; right: -280px; width: 280px; height: 100%;
-            background: #000; border-left: 2px solid var(--term-green); z-index: 100;
-            transition: right 0.3s ease; display: flex; flex-direction: column;
-        }
-        .network-overlay.open { right: 0; }
-        .network-title { padding: 15px; border-bottom: 2px dashed var(--term-green); font-weight: bold; background: rgba(51, 255, 51, 0.05); }
-        .user-nodes-list { flex-grow: 1; overflow-y: auto; }
-        .node-item { 
-            padding: 12px 20px; cursor: pointer; border-bottom: 1px solid var(--term-dim); 
-            font-size: 0.95rem; color: var(--term-text);
-        }
-        .node-item:hover, .node-item.active { background: var(--term-green); color: #000; font-weight: bold; }
-
-        
         button {
-            background: transparent; color: var(--term-green); border: 1px solid var(--term-green);
-            padding: 8px 16px; font-family: inherit; cursor: pointer; font-weight: bold; text-transform: uppercase;
+            background: var(--accent); color: #ffffff; border: none; border-radius: 8px;
+            padding: 12px 24px; font-weight: 500; font-size: 0.95rem; cursor: pointer; transition: background 0.15s;
         }
-        button:hover { background: var(--term-green); color: #000; }
-        .auth-box button { width: 100%; margin-top: 10px; padding: 12px; }
-        .auth-toggle { margin-top: 15px; font-size: 0.85rem; color: var(--term-dim); cursor: pointer; text-decoration: underline; }
-        .auth-toggle:hover { color: var(--term-green); }
+        button:hover { background: var(--accent-hover); }
+        .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--border-color); }
+        .btn-danger:hover { background: rgba(239, 68, 68, 0.05); }
 
-        @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+        .auth-toggle { margin-top: 20px; font-size: 0.85rem; color: var(--accent); cursor: pointer; text-align: center; font-weight: 500; }
+        .auth-toggle:hover { text-decoration: underline; }
     </style>
 </head>
 <body>
 
-    <div class="terminal-container">
-        <div class="terminal-header">
-            <div class="header-title">
-                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHg3Mnd4cHZhcDN3cmFwZHlsMG10OHl0bTBxdXN4YnY2amN1M3N3MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/u00507MxtYmSk/giphy.gif" alt="Dolphin" class="header-dolphin">
-                <span>DOLPHIN0X // CODENAME: PORTAL</span>
+    <div class="app-container">
+        <header>
+            <div class="header-title-box">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExOHg3Mnd4cHZhcDN3cmFwZHlsMG10OHl0bTBxdXN4YnY2amN1M3N3MiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/u00507MxtYmSk/giphy.gif" alt="" class="header-dolphin">
+                <h1>Dolphin0x</h1>
             </div>
-            <div id="systemStatus">[STATUS: OFFLINE]</div>
-        </div>
+            <div id="systemStatus" class="system-status">Offline</div>
+        </header>
 
         <div id="authScreen" class="auth-screen">
             <div class="auth-box">
-                <h2 id="authTitle">LOGIN</h2>
-                <input type="text" id="authUsername" placeholder="[CHOOSE_CYBERNAME]" style="display:none;">
-                <input type="email" id="authEmail" placeholder="[ENTER_EMAIL]">
-                <input type="password" id="authPassword" placeholder="[DECRYPTION_KEY]">
-                <button onclick="handleAuth()">EXECUTE AUTH()</button>
-                <div id="authToggleText" class="auth-toggle" onclick="toggleAuthMode()">No node connection? Register new account.</div>
+                <h2 id="authTitle">Inloggen</h2>
+                <div id="usernameGroup" style="display:none; margin-bottom:16px;">
+                    <input type="text" id="authUsername" placeholder="Gebruikersnaam">
+                </div>
+                <div style="margin-bottom:16px;">
+                    <input type="email" id="authEmail" placeholder="E-mailadres">
+                </div>
+                <div style="margin-bottom:24px;">
+                    <input type="password" id="authPassword" placeholder="Wachtwoord">
+                </div>
+                <button style="width:100%;" onclick="handleAuth()">Verder</button>
+                <div id="authToggleText" class="auth-toggle" onclick="toggleAuthMode()">Account aanmaken</div>
             </div>
         </div>
 
-        <div id="portalInterface" class="portal-main">
-            
-            <div class="chat-view">
-                <div class="chat-info-bar">
-                    <span id="activeChatTarget">> CONNECTED_TO: GLOBAL_HOLO_FEED</span>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="toggleNetworkMenu()">[NET_NODES]</button>
-                        <button style="color: var(--term-amber); border-color: var(--term-amber);" onclick="logout()">[EXIT]</button>
+        <div id="portalInterface" class="portal-interface">
+            <div class="sidebar">
+                <div class="section-header">Kanalen</div>
+                <div class="channel-list">
+                    <div id="globalChannelItem" class="chat-target-item active" onclick="selectGlobalChat()">
+                        Algemene chat
                     </div>
                 </div>
                 
-                <div id="messagesBox" class="messages-log"></div>
+                <div class="section-header">Directe berichten</div>
+                <div id="userList" class="user-list" style="flex-grow:1;"></div>
                 
-                <div class="terminal-prompt-bar">
-                    <span class="prompt-symbol">&gt;</span>
-                    <input type="text" id="messageInput" placeholder="ENTER TERMINAL COMMAND OR MESSAGE..." onkeydown="if(event.key==='Enter') sendMessage()">
-                    <button onclick="sendMessage()">SEND</button>
-                </div>
+                <button class="btn-danger" style="margin:20px; border-radius:8px;" onclick="logout()">Uitloggen</button>
             </div>
 
-            <div id="networkMenu" class="network-overlay">
-                <div class="network-title">⚡ ROUTING CONTROLS</div>
-                <div class="node-item active" id="globalChannelItem" onclick="selectGlobalChat()" style="color: var(--term-amber); font-weight: bold;">
-                    // GLOBAL_HOLO_FEED
+            <div class="chat-area">
+                <div id="activeChatTarget" class="chat-header">Algemene chat</div>
+                <div id="messagesBox" class="messages-feed"></div>
+                <div class="chat-input-bar">
+                    <input type="text" id="messageInput" placeholder="Typ een bericht..." onkeydown="if(event.key==='Enter') sendMessage()">
+                    <button onclick="sendMessage()">Verzenden</button>
                 </div>
-                <div class="network-title" style="border-top: 1px solid var(--term-green); font-size: 0.85rem;">📡 AVAILABLE ENDPOINTS</div>
-                <div id="userList" class="user-nodes-list"></div>
-                <button style="margin: 15px; border-style: dashed;" onclick="toggleNetworkMenu()">[CLOSE MENU]</button>
             </div>
-
         </div>
     </div>
 
@@ -198,18 +190,17 @@
         let unsubscribeChat = null;
         let usersCache = {};
 
-       
         window.handleAuth = async function() {
             const email = document.getElementById("authEmail").value.trim();
             const password = document.getElementById("authPassword").value.trim();
             const username = document.getElementById("authUsername").value.trim();
-            const isRegister = document.getElementById("authTitle").innerText === "REGISTER";
+            const isRegister = document.getElementById("authToggleText").innerText === "Inloggen";
 
             if(!email || !password || (isRegister && !username)) {
-                alert("CRITICAL: DATA INVALID."); return;
+                alert("Vul alle velden in."); return;
             }
             if(password.length < 6) {
-                alert("CRITICAL: SECURITY KEY MUST BE AT LEAST 6 CHARACTERS."); return;
+                alert("Het wachtwoord moet minimaal 6 tekens bevatten."); return;
             }
 
             try {
@@ -224,7 +215,7 @@
                     await signInWithEmailAndPassword(auth, email, password);
                 }
             } catch (err) {
-                alert("TERMINAL ERROR: " + err.message);
+                alert("Fout: " + err.message);
             }
         };
 
@@ -233,14 +224,14 @@
                 currentUser = user;
                 document.getElementById("authScreen").style.display = "none";
                 document.getElementById("portalInterface").style.display = "flex";
-                document.getElementById("systemStatus").innerText = "[SYS_ONLINE]";
-                await loadUserNodes();
+                document.getElementById("systemStatus").innerText = "Online";
+                await loadUserList();
                 selectGlobalChat();
             } else {
                 currentUser = null;
                 document.getElementById("authScreen").style.display = "flex";
                 document.getElementById("portalInterface").style.display = "none";
-                document.getElementById("systemStatus").innerText = "[SYS_OFFLINE]";
+                document.getElementById("systemStatus").innerText = "Offline";
             }
         });
 
@@ -248,23 +239,20 @@
 
         window.toggleAuthMode = function() {
             const title = document.getElementById("authTitle");
-            const userInp = document.getElementById("authUsername");
+            const userGroup = document.getElementById("usernameGroup");
             const toggleText = document.getElementById("authToggleText");
-            if (title.innerText === "LOGIN") {
-                title.innerText = "REGISTER"; userInp.style.display = "block";
-                toggleText.innerText = "Node active? Switch back to Login prompt.";
+            if (title.innerText === "Inloggen") {
+                title.innerText = "Registreren";
+                userGroup.style.display = "block";
+                toggleText.innerText = "Inloggen";
             } else {
-                title.innerText = "LOGIN"; userInp.style.display = "none";
-                toggleText.innerText = "No node connection? Register new account.";
+                title.innerText = "Inloggen";
+                userGroup.style.display = "none";
+                toggleText.innerText = "Account aanmaken";
             }
         };
 
-        
-        window.toggleNetworkMenu = function() {
-            document.getElementById("networkMenu").classList.toggle("open");
-        };
-
-        async function loadUserNodes() {
+        async function loadUserList() {
             try {
                 const querySnapshot = await getDocs(collection(db, "users"));
                 const userListEl = document.getElementById("userList");
@@ -278,38 +266,40 @@
                     if(currentUser && userData.uid === currentUser.uid) return;
 
                     const item = document.createElement("div");
-                    item.className = "node-item";
-                    item.id = `node-${userData.uid}`;
-                    item.innerText = `// NODE: ${userData.username}`;
-                    item.onclick = () => { selectUserChat(userData.uid, userData.username); toggleNetworkMenu(); };
+                    item.className = "chat-target-item";
+                    item.id = `user-${userData.uid}`;
+                    item.innerText = userData.username;
+                    item.onclick = () => selectUserChat(userData.uid, userData.username);
                     userListEl.appendChild(item);
                 });
             } catch (err) {
-                console.error("Endpoint mapping failed:", err);
+                console.error(err);
             }
         }
 
         window.selectGlobalChat = function() {
-            document.querySelectorAll(".node-item").forEach(el => el.classList.remove("active"));
+            document.querySelectorAll(".chat-target-item").forEach(el => el.classList.remove("active"));
             document.getElementById("globalChannelItem").classList.add("active");
 
             activeChatUserId = "global";
-            document.getElementById("activeChatTarget").innerText = "> CONNECTED_TO: GLOBAL_HOLO_FEED";
+            document.getElementById("activeChatTarget").innerText = "Algemene chat";
             loadMessages();
         };
 
         window.selectUserChat = function(targetUid, targetUsername) {
-            document.querySelectorAll(".node-item").forEach(el => el.classList.remove("active"));
-            const activeEl = document.getElementById(`node-${targetUid}`);
+            document.querySelectorAll(".chat-target-item").forEach(el => el.classList.remove("active"));
+            const activeEl = document.getElementById(`user-${targetUid}`);
             if(activeEl) activeEl.classList.add("active");
 
             activeChatUserId = targetUid;
-            document.getElementById("activeChatTarget").innerText = `> SECURE_TUNNEL_TO: @${targetUsername}`;
+            document.getElementById("activeChatTarget").innerText = targetUsername;
             loadMessages();
         };
 
         function getChatId(uid1, uid2) {
-            return uid1 < uid2 ? `${uid1}_${uid2}` : 
+            return uid1 < uid2 ? `${uid1}_${uid2}` : `${uid2}_${uid1}`;
+        }
+
         function loadMessages() {
             if (unsubscribeChat) unsubscribeChat();
 
@@ -329,19 +319,20 @@
                     const msg = doc.data();
                     const isMe = msg.senderId === currentUser.uid;
                     
-                    let displayName = usersCache[msg.senderId] || msg.senderName || "UNKNOWN_NODE";
-                    let tagClass = "them";
-                    if (isMe) { displayName = "YOU"; tagClass = "me"; }
-                    if (activeChatUserId === "global" && !isMe) { tagClass = "global"; }
+                    let displayName = usersCache[msg.senderId] || msg.senderName || "Gebruiker";
+                    if (isMe) displayName = "Jij";
 
-                    const timestamp = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                    const wrapper = document.createElement("div");
+                    wrapper.className = `msg-wrapper ${isMe ? 'me' : 'them'}`;
+                    
+                    const timeStr = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'}) : '';
 
-                    const line = document.createElement("div");
-                    line.className = "log-line";
-                    line.innerHTML = `
-                        <span class="log-time">[${timestamp}]</span><span class="log-tag ${tagClass}">&lt;@${displayName}&gt;</span>${escapeHTML(msg.text)}
+                    wrapper.innerHTML = `
+                        <div class="msg-author">${displayName}</div>
+                        <div class="msg-bubble">${escapeHTML(msg.text)}</div>
+                        <div class="msg-meta">${timeStr}</div>
                     `;
-                    box.appendChild(line);
+                    box.appendChild(wrapper);
                 });
                 box.scrollTop = box.scrollHeight;
             });
