@@ -84,17 +84,27 @@
         }
         .messages-feed { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; }
         
-        .msg-wrapper { display: flex; flex-direction: column; max-width: 70%; }
+        .msg-wrapper { display: flex; flex-direction: column; max-width: 70%; position: relative; }
         .msg-wrapper.me { align-self: flex-end; }
         .msg-wrapper.them { align-self: flex-start; }
         
         .msg-author { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500; }
         .me .msg-author { text-align: right; }
 
+        .bubble-container { display: flex; align-items: center; gap: 8px; }
+        .me .bubble-container { flex-direction: row-reverse; }
+
         .msg-bubble { padding: 12px 16px; border-radius: 12px; font-size: 0.95rem; word-wrap: break-word; line-height: 1.5; }
         .me .msg-bubble { background: var(--accent); color: #ffffff; border-bottom-right-radius: 2px; }
         .them .msg-bubble { background: var(--bg-panel); color: var(--text-main); border-bottom-left-radius: 2px; border: 1px solid var(--border-color); }
         
+        .delete-btn {
+            background: transparent; color: var(--text-muted); border: none; padding: 4px; cursor: pointer;
+            border-radius: 4px; display: flex; align-items: center; justify-content: center; transition: color 0.15s, background 0.15s;
+        }
+        .delete-btn:hover { color: var(--danger); background: rgba(239, 68, 68, 0.1); }
+        .delete-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
         .msg-meta { font-size: 0.7rem; color: var(--text-muted); margin-top: 4px; }
         .me .msg-meta { text-align: right; }
 
@@ -179,7 +189,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDocs, collection, addDoc, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDocs, collection, addDoc, query, orderBy, onSnapshot, deleteDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
@@ -344,9 +354,10 @@
                 const box = document.getElementById("messagesBox");
                 box.innerHTML = "";
 
-                snapshot.forEach((doc) => {
-                    const msg = doc.data();
+                snapshot.forEach((subDoc) => {
+                    const msg = subDoc.data();
                     const isMe = msg.senderId === currentUser.uid;
+                    const messageId = subDoc.id;
                     
                     let displayName = usersCache[msg.senderId] || msg.senderName || "Gebruiker";
                     if (isMe) displayName = "Jij";
@@ -356,9 +367,21 @@
                     
                     const timeStr = msg.timestamp ? new Date(msg.timestamp.toMillis()).toLocaleTimeString('nl-NL', {hour: '2-digit', minute:'2-digit'}) : '';
 
+                    let deleteButtonHtml = '';
+                    if (isMe) {
+                        deleteButtonHtml = `
+                            <button class="delete-btn" onclick="deleteMessage('${messageId}')" title="Bericht verwijderen">
+                                <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+                            </button>
+                        `;
+                    }
+
                     wrapper.innerHTML = `
                         <div class="msg-author">${displayName}</div>
-                        <div class="msg-bubble">${escapeHTML(msg.text)}</div>
+                        <div class="bubble-container">
+                            <div class="msg-bubble">${escapeHTML(msg.text)}</div>
+                            ${deleteButtonHtml}
+                        </div>
                         <div class="msg-meta">${timeStr}</div>
                     `;
                     box.appendChild(wrapper);
@@ -366,6 +389,21 @@
                 box.scrollTop = box.scrollHeight;
             });
         }
+
+        window.deleteMessage = async function(messageId) {
+            if (!confirm("Weet je zeker dat je dit bericht wilt verwijderen?")) return;
+
+            try {
+                if (activeChatUserId === "global") {
+                    await deleteDoc(doc(db, "global_messages", messageId));
+                } else {
+                    const chatId = getChatId(currentUser.uid, activeChatUserId);
+                    await deleteDoc(doc(db, "chats", chatId, "messages", messageId));
+                }
+            } catch (err) {
+                alert("Fout bij verwijderen: " + err.message);
+            }
+        };
 
         window.sendMessage = async function() {
             const textInput = document.getElementById("messageInput");
