@@ -58,9 +58,17 @@
             background: var(--bg-panel); display: flex; flex-direction: column;
         }
         .section-header { 
-            padding: 16px 20px; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;
+            padding: 16px 20px 8px 20px; font-weight: 600; font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.05em; text-transform: uppercase;
         }
         
+        .search-box-container {
+            padding: 0 20px 10px 20px;
+        }
+        .search-input {
+            width: 100%; padding: 8px 12px; font-size: 0.85rem; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-main); outline: none;
+        }
+        .search-input:focus { border-color: var(--accent); }
+
         .channel-list, .user-list { overflow-y: auto; }
         .chat-target-item {
             padding: 12px 20px; cursor: pointer; transition: background 0.15s;
@@ -149,6 +157,9 @@
                 </div>
                 
                 <div class="section-header">Directe berichten</div>
+                <div class="search-box-container">
+                    <input type="text" id="userSearch" class="search-input" placeholder="Zoek gebruiker..." oninput="filterUsers()">
+                </div>
                 <div id="userList" class="user-list" style="flex-grow:1;"></div>
                 
                 <button class="btn-danger" style="margin:20px; border-radius:8px;" onclick="logout()">Uitloggen</button>
@@ -189,14 +200,14 @@
         let activeChatUserId = "global";
         let unsubscribeChat = null;
         let usersCache = {};
+        let isRegisterMode = false;
 
         window.handleAuth = async function() {
             const email = document.getElementById("authEmail").value.trim();
             const password = document.getElementById("authPassword").value.trim();
             const username = document.getElementById("authUsername").value.trim();
-            const isRegister = document.getElementById("authToggleText").innerText === "Inloggen";
 
-            if(!email || !password || (isRegister && !username)) {
+            if(!email || !password || (isRegisterMode && !username)) {
                 alert("Vul alle velden in."); return;
             }
             if(password.length < 6) {
@@ -204,7 +215,7 @@
             }
 
             try {
-                if (isRegister) {
+                if (isRegisterMode) {
                     const res = await createUserWithEmailAndPassword(auth, email, password);
                     await setDoc(doc(db, "users", res.user.uid), {
                         uid: res.user.uid,
@@ -226,7 +237,7 @@
                 document.getElementById("portalInterface").style.display = "flex";
                 document.getElementById("systemStatus").innerText = "Online";
                 await loadUserList();
-                selectGlobalChat();
+                window.selectGlobalChat();
             } else {
                 currentUser = null;
                 document.getElementById("authScreen").style.display = "flex";
@@ -241,10 +252,13 @@
             const title = document.getElementById("authTitle");
             const userGroup = document.getElementById("usernameGroup");
             const toggleText = document.getElementById("authToggleText");
-            if (title.innerText === "Inloggen") {
+            
+            isRegisterMode = !isRegisterMode;
+            
+            if (isRegisterMode) {
                 title.innerText = "Registreren";
                 userGroup.style.display = "block";
-                toggleText.innerText = "Inloggen";
+                toggleText.innerText = "Al een account? Inloggen";
             } else {
                 title.innerText = "Inloggen";
                 userGroup.style.display = "none";
@@ -266,16 +280,31 @@
                     if(currentUser && userData.uid === currentUser.uid) return;
 
                     const item = document.createElement("div");
-                    item.className = "chat-target-item";
+                    item.className = "chat-target-item user-node";
                     item.id = `user-${userData.uid}`;
+                    item.setAttribute('data-username', userData.username.toLowerCase());
                     item.innerText = userData.username;
-                    item.onclick = () => selectUserChat(userData.uid, userData.username);
+                    item.onclick = () => window.selectUserChat(userData.uid, userData.username);
                     userListEl.appendChild(item);
                 });
             } catch (err) {
                 console.error(err);
             }
         }
+
+        window.filterUsers = function() {
+            const query = document.getElementById("userSearch").value.toLowerCase();
+            const userItems = document.querySelectorAll(".user-node");
+            
+            userItems.forEach(item => {
+                const username = item.getAttribute("data-username");
+                if (username.includes(query)) {
+                    item.style.display = "flex";
+                } else {
+                    item.style.display = "none";
+                }
+            });
+        };
 
         window.selectGlobalChat = function() {
             document.querySelectorAll(".chat-target-item").forEach(el => el.classList.remove("active"));
