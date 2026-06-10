@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x - Accounts, Avatars & Calls</title>
+    <title>Dolphin0x - Profile Settings & Chat</title>
     <style>
         :root {
             --bg-main: #0b1528;
@@ -22,18 +22,11 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Login Scherm & Elementen */
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .login-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); text-align: center; max-width: 440px; width: 100%; margin: auto; }
+        /* Login Scherm */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .login-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); text-align: center; max-width: 400px; width: 100%; }
         .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none; margin-bottom: 10px; font-size: 0.95rem; }
         
-        /* Avatar Pick Grid */
-        .avatar-picker-label { text-align: left; font-size: 0.85rem; color: var(--text-muted); margin: 10px 0 6px 2px; font-weight: 600; }
-        .avatar-grid { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; }
-        .avatar-option { width: 50px; height: 50px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; transition: transform 0.1s, border-color 0.2s; }
-        .avatar-option:hover { transform: scale(1.05); }
-        .avatar-option.selected { border-color: var(--accent); transform: scale(1.1); }
-
         .login-btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; margin-bottom: 8px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-primary { background: var(--accent); color: white; }
         .btn-primary:hover { background: var(--accent-hover); }
@@ -43,7 +36,9 @@
 
         /* App Layout */
         .sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; shrink: 0; }
-        .profile-bar { padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, #112547, #17325c); display: flex; align-items: center; justify-content: space-between; }
+        .profile-bar { padding: 15px 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, #112547, #17325c); display: flex; align-items: center; justify-content: space-between; }
+        .profile-clickable { display: flex; align-items: center; gap: 12px; cursor: pointer; padding: 4px; border-radius: 8px; transition: background 0.2s; flex-grow: 1; }
+        .profile-clickable:hover { background: rgba(255,255,255,0.05); }
         .avatar-sm { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
         .username { font-weight: 700; color: #ffffff; }
         
@@ -79,6 +74,13 @@
         .chat-input-bar input { flex-grow: 1; padding: 16px 20px; border-radius: 28px; border: 1px solid var(--border-color); background: var(--bg-input); color: white; outline: none; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
         .chat-input-bar button { background: var(--accent); color: white; border: none; padding: 14px 28px; border-radius: 28px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
 
+        /* Instellingen Modal Scherm */
+        .settings-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,11,22,0.85); z-index: 3000; align-items: center; justify-content: center; padding: 20px; }
+        .settings-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 25px; border-radius: 16px; max-width: 440px; width: 100%; text-align: left; box-shadow: 0 10px 40px rgba(0,0,0,0.5); }
+        .avatar-grid { display: flex; gap: 10px; justify-content: flex-start; margin: 10px 0; overflow-x: auto; padding-bottom: 5px; }
+        .avatar-option { width: 52px; height: 52px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; }
+        .avatar-option.selected { border-color: var(--accent); transform: scale(1.05); }
+
         /* Calling Overlay */
         .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,11,22,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; color: white; }
         .video-grid { display: flex; gap: 20px; width: 80%; height: 60%; margin-bottom: 30px; }
@@ -105,22 +107,12 @@
     <div id="loginOverlay" class="login-overlay">
         <div class="login-card">
             <h2 style="color:#fff; margin:0 0 5px 0;">Dolphin0x Netwerk</h2>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 20px;">Log in via e-mail, telefoon of social media en kies een avatar.</p>
+            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 20px;">Log in om direct deel te nemen aan het netwerk.</p>
             
-            <input type="email" id="authEmail" class="auth-input" placeholder="E-mailadres (voor wachtwoord login)">
-            <input type="password" id="authPassword" class="auth-input" placeholder="Wachtwoord (voor wachtwoord login)">
+            <input type="email" id="authEmail" class="auth-input" placeholder="E-mailadres">
+            <input type="password" id="authPassword" class="auth-input" placeholder="Wachtwoord">
             <input type="tel" id="authPhone" class="auth-input" placeholder="Telefoonnummer (bijv. +31612345678)">
             
-            <div class="avatar-picker-label">Kies jouw Avatar:</div>
-            <div class="avatar-grid">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" class="avatar-option selected" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix')">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Aneka" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka')">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Jack" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Jack')">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Leo" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo')">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mia" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia')">
-            </div>
-            <input type="text" id="customAvatarUrl" class="auth-input" style="font-size: 0.8rem; padding: 8px;" placeholder="Of plak hier een eigen afbeelding-URL..." oninput="setCustomAvatar(this.value)">
-
             <button class="login-btn btn-primary" onclick="loginEmail()">Inloggen / Registreren met E-mail</button>
             <button class="login-btn btn-phone" onclick="loginWithPhone()">Inloggen met Telefoonnummer</button>
             
@@ -133,15 +125,43 @@
         </div>
     </div>
 
+    <div id="settingsOverlay" class="settings-overlay">
+        <div class="settings-card">
+            <h3 style="margin-top:0; color:#fff;">Profiel Instellingen</h3>
+            <p style="color:var(--text-muted); font-size:0.85rem;">Pas hier je weergavenaam en avatar aan.</p>
+            
+            <label style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">Gebruikersnaam:</label>
+            <input type="text" id="settingsUsernameInput" class="auth-input" style="margin-top:5px;" placeholder="Je gebruikersnaam...">
+            
+            <label style="font-size:0.85rem; color:var(--text-muted); font-weight:bold; display:block; margin-top:10px;">Kies een Avatar:</label>
+            <div class="avatar-grid">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" class="avatar-option" onclick="selectSettingsAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix')">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Aneka" class="avatar-option" onclick="selectSettingsAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka')">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Jack" class="avatar-option" onclick="selectSettingsAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Jack')">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Leo" class="avatar-option" onclick="selectSettingsAvatar(this, 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo')">
+                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mia" class="avatar-option" onclick="selectSettingsAvatar(this, 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia')">
+            </div>
+            
+            <label style="font-size:0.85rem; color:var(--text-muted); font-weight:bold;">Of eigen afbeelding URL:</label>
+            <input type="text" id="settingsCustomAvatarUrl" class="auth-input" style="margin-top:5px; font-size:0.8rem;" placeholder="Plak afbeeldings-URL..." oninput="setCustomSettingsAvatar(this.value)">
+
+            <div style="display:flex; gap:10px; margin-top:15px;">
+                <button class="login-btn btn-primary" style="margin:0;" onclick="saveProfileSettings()">Opslaan</button>
+                <button class="login-btn" style="margin:0; background:var(--bg-input); color:white;" onclick="closeSettings()">Annuleren</button>
+            </div>
+        </div>
+    </div>
+
     <div class="sidebar">
         <div class="profile-bar">
-            <div class="user-info">
+            <div class="profile-clickable" onclick="openSettings()" title="Klik om profiel te wijzigen">
                 <img id="myAvatar" src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm">
                 <div>
                     <div id="myName" class="username">Laden...</div>
-                    <span style="font-size: 0.75rem; color: var(--danger); cursor: pointer;" onclick="logout()">Uitloggen</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">Instellingen ⚙️</span>
                 </div>
             </div>
+            <span style="font-size: 0.75rem; color: var(--danger); cursor: pointer; padding-left:10px;" onclick="logout()">Uitloggen</span>
         </div>
 
         <div class="nav-tabs">
@@ -208,28 +228,13 @@
         let usersCache = {};
         let channelsList = [];
         let unsubscribeChat = null;
-        let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Felix";
+        let tempSelectedAvatarUrl = "";
 
         // WebRTC Config
         let localStream, remoteStream, peerConnection, activeCallId;
         const servers = { iceServers: [{ urls: ['ice1.l.google.com:19002'] }] };
 
-        // 1. AVATAR SELECTIE LOGICA
-        window.selectAvatar = function(element, url) {
-            document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selected'));
-            element.classList.add('selected');
-            selectedAvatarUrl = url;
-            document.getElementById('customAvatarUrl').value = ""; // Reset custom input
-        };
-
-        window.setCustomAvatar = function(url) {
-            if(url.trim() !== "") {
-                document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selected'));
-                selectedAvatarUrl = url.trim();
-            }
-        };
-
-        // 2. AUTHENTICATIE METHODES
+        // 1. LOGIN PROCEDURES
         window.loginEmail = async function() {
             const e = document.getElementById('authEmail').value;
             const p = document.getElementById('authPassword').value;
@@ -240,11 +245,10 @@
         window.loginWithPhone = async function() {
             const phoneNumber = document.getElementById('authPhone').value.trim();
             if(!phoneNumber) return alert("Vul eerst een geldig telefoonnummer in!");
-            
             window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
             try {
                 const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-                const code = prompt("Voer de verificatiecode in die per SMS is verstuurd:");
+                const code = prompt("Voer de verificatiecode in:");
                 if(code) await confirmationResult.confirm(code);
             } catch (err) { alert("Telefoon inlog mislukt: " + err.message); }
         };
@@ -261,13 +265,11 @@
                 const userRef = doc(db, "users", user.uid);
                 const userSnap = await getDoc(userRef);
                 
-                // Sla de geselecteerde avatar op als de gebruiker nieuw is, of behoud de bestaande
                 if (!userSnap.exists()) {
-                    let finalAvatar = selectedAvatarUrl || user.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
                     await setDoc(userRef, { 
                         uid: user.uid, 
                         username: user.displayName || user.phoneNumber || user.email.split('@')[0], 
-                        avatarUrl: finalAvatar 
+                        avatarUrl: user.photoURL || "https://api.dicebear.com/7.x/bottts/svg?seed=Felix" 
                     });
                 }
 
@@ -281,8 +283,10 @@
                     usersCache = {};
                     snapshot.forEach(d => usersCache[d.id] = d.data());
                     
-                    document.getElementById("myName").innerText = usersCache[user.uid]?.username || "Gebruiker";
-                    document.getElementById("myAvatar").src = usersCache[user.uid]?.avatarUrl || selectedAvatarUrl;
+                    if(usersCache[user.uid]) {
+                        document.getElementById("myName").innerText = usersCache[user.uid].username;
+                        document.getElementById("myAvatar").src = usersCache[user.uid].avatarUrl;
+                    }
                     renderSidebar();
                 });
                 listenForCalls();
@@ -291,6 +295,55 @@
                 document.getElementById("loginOverlay").style.display = "flex";
             }
         });
+
+        // 2. INSTELLEN LIVE AVATAR & NAAM (IN-SITE)
+        window.openSettings = function() {
+            if(!currentUser || !usersCache[currentUser.uid]) return;
+            const myData = usersCache[currentUser.uid];
+            
+            document.getElementById("settingsUsernameInput").value = myData.username;
+            document.getElementById("settingsCustomAvatarUrl").value = myData.avatarUrl.startsWith('https://api.dicebear.com') ? "" : myData.avatarUrl;
+            tempSelectedAvatarUrl = myData.avatarUrl;
+
+            // Markeer geselecteerde avatar indien aanwezig in grid
+            document.querySelectorAll('.avatar-option').forEach(img => {
+                img.classList.toggle('selected', img.src === myData.avatarUrl);
+            });
+
+            document.getElementById("settingsOverlay").style.display = "flex";
+        };
+
+        window.closeSettings = function() {
+            document.getElementById("settingsOverlay").style.display = "none";
+        };
+
+        window.selectSettingsAvatar = function(element, url) {
+            document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selected'));
+            element.classList.add('selected');
+            tempSelectedAvatarUrl = url;
+            document.getElementById('settingsCustomAvatarUrl').value = "";
+        };
+
+        window.setCustomSettingsAvatar = function(url) {
+            if(url.trim() !== "") {
+                document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selected'));
+                tempSelectedAvatarUrl = url.trim();
+            }
+        };
+
+        window.saveProfileSettings = async function() {
+            const newName = document.getElementById("settingsUsernameInput").value.trim();
+            if(!newName) return alert("Gebruikersnaam mag niet leeg zijn!");
+
+            try {
+                const userRef = doc(db, "users", currentUser.uid);
+                await updateDoc(userRef, {
+                    username: newName,
+                    avatarUrl: tempSelectedAvatarUrl
+                });
+                closeSettings();
+            } catch(err) { alert("Fout bij opslaan: " + err.message); }
+        };
 
         // 3. NAVIGATIE & SIDEBAR
         window.switchTab = function(tab) {
@@ -311,7 +364,6 @@
             const input = document.getElementById("newGroupNameInput");
             const name = input.value.trim();
             if(!name) return;
-
             try {
                 await addDoc(collection(db, "channels"), { name: name, createdAt: new Date(), creator: currentUser.uid });
                 input.value = "";
