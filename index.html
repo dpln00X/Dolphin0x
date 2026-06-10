@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x - Chat, Call & AI</title>
+    <title>Dolphin0x - Responsive Chat, Call & AI</title>
     <style>
         :root {
             --bg-main: #0b1528;
@@ -31,8 +31,8 @@
         .btn-google { background: #ffffff; color: #000000; }
         .btn-apple { background: #000000; color: #ffffff; }
 
-        /* App Layout */
-        .sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; }
+        /* App Layout (Flexbox & Responsive) */
+        .sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; shrink: 0; }
         .profile-bar { padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, #112547, #17325c); display: flex; align-items: center; justify-content: space-between; }
         .avatar-sm { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
         .username { font-weight: 700; color: #ffffff; }
@@ -41,8 +41,13 @@
         .nav-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; }
         .nav-tab.active { color: var(--text-main); border-bottom: 3px solid var(--accent); background: var(--bg-panel); }
 
+        /* Groep maken sectie */
+        .create-group-box { padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; background: #0c172a; }
+        .group-input { flex-grow: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: white; font-size: 0.85rem; outline: none; }
+        .btn-create-group { background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
+
         .list-container { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; }
+        .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; }
         .user-item:hover { background: var(--bg-input); }
         .user-item.active { background: var(--accent-light); border: 1px solid var(--accent); }
         .user-info { display: flex; align-items: center; gap: 12px; }
@@ -51,15 +56,19 @@
         /* Chatvenster */
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #080f1a; position: relative; }
         .chat-header { background: var(--bg-panel); padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-weight: 700; }
+        .btn-back { display: none; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
+        
         .chat-messages { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         .chat-bubble { padding: 12px 16px; border-radius: 14px; max-width: 65%; font-size: 0.95rem; word-wrap: break-word; }
         .chat-bubble.me { background: var(--accent); color: white; align-self: flex-end; border-top-right-radius: 2px; }
         .chat-bubble.them { background: var(--bg-panel); color: var(--text-main); align-self: flex-start; border-top-left-radius: 2px; border: 1px solid var(--border-color); }
         .chat-author { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; margin-left: 4px; }
         
-        .chat-input-bar { padding: 16px 24px; background: var(--bg-panel); display: flex; gap: 12px; border-top: 1px solid var(--border-color); }
-        .chat-input-bar input { flex-grow: 1; padding: 12px 18px; border-radius: 24px; border: 1px solid var(--border-color); background: var(--bg-input); color: white; outline: none; }
-        .chat-input-bar button { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
+        /* Verhoogde en ruimere tekstbalk */
+        .chat-input-bar { padding: 20px 24px; background: var(--bg-panel); display: flex; gap: 14px; border-top: 1px solid var(--border-color); align-items: center; }
+        .chat-input-bar input { flex-grow: 1; padding: 16px 20px; border-radius: 28px; border: 1px solid var(--border-color); background: var(--bg-input); color: white; outline: none; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
+        .chat-input-bar button { background: var(--accent); color: white; border: none; padding: 14px 28px; border-radius: 28px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
+        .chat-input-bar button:hover { background: var(--accent-hover); }
 
         /* Calling Overlay */
         .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,11,22,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; color: white; }
@@ -67,6 +76,24 @@
         .video-box { flex: 1; background: #111f38; border-radius: 12px; overflow: hidden; position: relative; border: 2px solid var(--border-color); }
         .video-box video { width: 100%; height: 100%; object-fit: cover; }
         .btn-hangup { width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; background: var(--danger); color: white; border: none; cursor: pointer; }
+
+        /* 📱 RESPONSIVE LAYOUT VOOR MOBIEL */
+        @media (max-width: 768px) {
+            .sidebar { width: 100%; }
+            .chat-area { display: none; width: 100%; }
+            
+            /* Wanneer een chat actief is op mobiel, verberg de zijbalk en toon de chat */
+            body.chat-open .sidebar { display: none; }
+            body.chat-open .chat-area { display: flex; }
+            body.chat-open .btn-back { display: block; }
+            
+            .chat-bubble { max-width: 85%; }
+            .chat-input-bar { padding: 12px; gap: 8px; }
+            .chat-input-bar input { padding: 12px 16px; font-size: 0.95rem; }
+            .chat-input-bar button { padding: 12px 20px; font-size: 0.95rem; }
+            
+            .video-grid { flex-direction: column; width: 90%; height: 70%; }
+        }
     </style>
 </head>
 <body>
@@ -99,8 +126,13 @@
         </div>
 
         <div class="nav-tabs">
-            <div id="tabGroup" class="nav-tab active" onclick="switchTab('group')">Groep</div>
+            <div id="tabGroup" class="nav-tab active" onclick="switchTab('group')">Groepen</div>
             <div id="tabPrivate" class="nav-tab" onclick="switchTab('private')">Privé</div>
+        </div>
+
+        <div id="createGroupBox" class="create-group-box">
+            <input type="text" id="newGroupNameInput" class="group-input" placeholder="Nieuwe groepsnaam..." onkeydown="if(event.key==='Enter') createGroupChannel()">
+            <button class="btn-create-group" onclick="createGroupChannel()">+ Maken</button>
         </div>
 
         <div id="listContainer" class="list-container"></div>
@@ -108,12 +140,13 @@
 
     <div class="chat-area">
         <div id="chatHeader" class="chat-header" style="display:none;">
+            <button class="btn-back" onclick="closeChatOnMobile()">← Terug</button>
             <img id="chatTargetAvatar" src="" class="avatar-sm" style="width:32px; height:32px;">
             <span id="chatTargetName">Selecteer een chat</span>
         </div>
         
         <div id="chatMessages" class="chat-messages">
-            <div style="text-align:center; color:var(--text-muted); margin-top: 50px;">Welkom! Selecteer links een kanaal of persoon.</div>
+            <div style="text-align:center; color:var(--text-muted); margin-top: 50px;">Welkom! Selecteer links een groep of persoon om te beginnen.</div>
         </div>
         
         <div class="chat-input-bar" id="chatInputBar" style="display:none;">
@@ -151,16 +184,16 @@
         const db = getFirestore(app);
 
         let currentUser = null;
-        let activeTab = 'group'; // 'group' of 'private'
-        let activeChatId = null; // 'global' of UID van de ander
+        let activeTab = 'group'; 
+        let activeChatId = null; 
         let usersCache = {};
+        let channelsList = [];
         let unsubscribeChat = null;
 
         // WebRTC
         let localStream, remoteStream, peerConnection, activeCallId;
         const servers = { iceServers: [{ urls: ['ice1.l.google.com:19002'] }] };
 
-        // De AI Bot
         const aiBotProfile = {
             uid: "dolphin_ai_bot",
             username: "🤖 DolphinAI",
@@ -188,17 +221,24 @@
                     await setDoc(userRef, { uid: user.uid, username: user.displayName || user.email.split('@')[0], avatarUrl: user.photoURL || "https://www.w3schools.com/howto/img_avatar.png" });
                 }
 
+                // Luister naar custom groepen/kanalen
+                onSnapshot(collection(db, "channels"), (snapshot) => {
+                    channelsList = [];
+                    snapshot.forEach(d => channelsList.push({ id: d.id, ...d.data() }));
+                    renderSidebar();
+                });
+
                 onSnapshot(collection(db, "users"), (snapshot) => {
                     usersCache = {};
                     snapshot.forEach(d => usersCache[d.id] = d.data());
-                    usersCache[aiBotProfile.uid] = aiBotProfile; // AI Bot toevoegen aan lijst
+                    usersCache[aiBotProfile.uid] = aiBotProfile;
                     
                     document.getElementById("myName").innerText = usersCache[user.uid].username;
                     document.getElementById("myAvatar").src = usersCache[user.uid].avatarUrl;
                     renderSidebar();
                 });
                 listenForCalls();
-                openChat('global'); // Start standaard in de groep
+                openChat('global'); 
             } else {
                 document.getElementById("loginOverlay").style.display = "flex";
             }
@@ -209,10 +249,27 @@
             activeTab = tab;
             document.getElementById("tabGroup").classList.toggle("active", tab === 'group');
             document.getElementById("tabPrivate").classList.toggle("active", tab === 'private');
+            document.getElementById("createGroupBox").style.display = tab === 'group' ? 'flex' : 'none';
             renderSidebar();
             
             if(tab === 'group') openChat('global');
-            else openChat(aiBotProfile.uid); // Open standaard de bot bij privé
+            else openChat(aiBotProfile.uid); 
+        };
+
+        // ZELF EEN GROEP MAKEN LOGICA
+        window.createGroupChannel = async function() {
+            const input = document.getElementById("newGroupNameInput");
+            const name = input.value.trim();
+            if(!name) return;
+
+            try {
+                await addDoc(collection(db, "channels"), {
+                    name: name,
+                    createdAt: new Date(),
+                    creator: currentUser.uid
+                });
+                input.value = "";
+            } catch(err) { alert("Fout bij maken groep: " + err.message); }
         };
 
         function renderSidebar() {
@@ -220,16 +277,27 @@
             container.innerHTML = "";
 
             if (activeTab === 'group') {
-                container.innerHTML = `
+                // Standaard Algemene chat
+                container.innerHTML += `
                     <div class="user-item ${activeChatId === 'global' ? 'active' : ''}" onclick="openChat('global')">
                         <div class="user-info">
-                            <div style="font-size:24px;">🌍</div>
+                            <div style="font-size:22px;">🌍</div>
                             <span style="font-weight:bold;">Algemene Chat</span>
                         </div>
                     </div>
                 `;
+                // Zelfgemaakte groepen laden
+                channelsList.forEach(channel => {
+                    container.innerHTML += `
+                        <div class="user-item ${activeChatId === channel.id ? 'active' : ''}" onclick="openChat('${channel.id}')">
+                            <div class="user-info">
+                                <div style="font-size:22px;">💬</div>
+                                <span>${escapeHTML(channel.name)}</span>
+                            </div>
+                        </div>
+                    `;
+                });
             } else {
-                // Toon AI Bot bovenaan, daarna andere gebruikers
                 [aiBotProfile.uid, ...Object.keys(usersCache).filter(id => id !== currentUser.uid && id !== aiBotProfile.uid)].forEach(uid => {
                     const u = usersCache[uid];
                     const callBtn = uid === aiBotProfile.uid ? '' : `<button class="btn-call" onclick="event.stopPropagation(); startCall('${uid}')">📞</button>`;
@@ -247,34 +315,48 @@
             }
         }
 
-        // 3. CHAT LOGICA (GROEP & PRIVÉ)
+        // 3. CHAT LOGICA (MOBIEL RESPONSIVE TOEVOEGING)
         window.openChat = function(id) {
             activeChatId = id;
             document.getElementById("chatHeader").style.display = "flex";
             document.getElementById("chatInputBar").style.display = "flex";
             
+            // Mobiel switch klasse triggeren
+            document.body.classList.add("chat-open");
+
             if (id === 'global') {
                 document.getElementById("chatTargetName").innerText = "Algemene Groepschat";
                 document.getElementById("chatTargetAvatar").src = "https://cdn-icons-png.flaticon.com/512/615/615075.png";
-            } else {
+            } else if (usersCache[id]) {
                 document.getElementById("chatTargetName").innerText = usersCache[id].username;
                 document.getElementById("chatTargetAvatar").src = usersCache[id].avatarUrl;
+            } else {
+                // Het is een handmatig gemaakte groep
+                const channel = channelsList.find(c => c.id === id);
+                document.getElementById("chatTargetName").innerText = channel ? channel.name : "Groep";
+                document.getElementById("chatTargetAvatar").src = "https://cdn-icons-png.flaticon.com/512/615/615075.png";
             }
 
             renderSidebar();
             if(unsubscribeChat) unsubscribeChat();
 
-            const q = id === 'global' 
-                ? query(collection(db, "global_chat"), orderBy("timestamp", "asc"))
-                : query(collection(db, "direct_chats", currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`, "messages"), orderBy("timestamp", "asc"));
+            // Selecteer juiste Firebase collectiepad op basis van kanaal of privé
+            let dbQuery;
+            if (id === 'global') {
+                dbQuery = query(collection(db, "global_chat"), orderBy("timestamp", "asc"));
+            } else if (usersCache[id]) {
+                dbQuery = query(collection(db, "direct_chats", currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`, "messages"), orderBy("timestamp", "asc"));
+            } else {
+                dbQuery = query(collection(db, "channels", id, "messages"), orderBy("timestamp", "asc"));
+            }
 
-            unsubscribeChat = onSnapshot(q, (snapshot) => {
+            unsubscribeChat = onSnapshot(dbQuery, (snapshot) => {
                 const box = document.getElementById("chatMessages");
                 box.innerHTML = "";
                 snapshot.forEach(d => {
                     const m = d.data();
                     const isMe = m.senderId === currentUser.uid;
-                    const authorName = id === 'global' && !isMe ? `<div class="chat-author">${usersCache[m.senderId]?.username || 'Gebruiker'}</div>` : '';
+                    const authorName = (id === 'global' || !usersCache[id]) && !isMe ? `<div class="chat-author">${usersCache[m.senderId]?.username || 'Gebruiker'}</div>` : '';
                     box.innerHTML += `
                         <div style="display:flex; flex-direction:column; align-items: ${isMe ? 'flex-end' : 'flex-start'}; width:100%;">
                             ${authorName}
@@ -285,6 +367,10 @@
             });
         }
 
+        window.closeChatOnMobile = function() {
+            document.body.classList.remove("chat-open");
+        };
+
         window.sendMessage = async function() {
             const input = document.getElementById("chatMessageInput");
             const text = input.value.trim();
@@ -294,20 +380,22 @@
 
             if (activeChatId === 'global') {
                 await addDoc(collection(db, "global_chat"), payload);
-            } else {
+            } else if (usersCache[activeChatId]) {
                 const chatId = currentUser.uid < activeChatId ? `${currentUser.uid}_${activeChatId}` : `${activeChatId}_${currentUser.uid}`;
                 await addDoc(collection(db, "direct_chats", chatId, "messages"), payload);
 
-                // AI Bot Autoreply
                 if (activeChatId === aiBotProfile.uid) {
                     setTimeout(async () => {
                         await addDoc(collection(db, "direct_chats", chatId, "messages"), {
                             senderId: aiBotProfile.uid,
-                            text: "Ik ben DolphinAI! 🐬 Ik help je graag, maar ik leer nog. Stel me gerust een vraag!",
+                            text: "Ik ben DolphinAI! 🐬 Wat een mooie upgrade aan onze app met eigen groepen en een mobiele layout. Waar kan ik je vandaag mee helpen?",
                             timestamp: new Date()
                         });
                     }, 1000);
                 }
+            } else {
+                // Verstuur naar gemaakte groep
+                await addDoc(collection(db, "channels", activeChatId, "messages"), payload);
             }
             input.value = "";
         };
