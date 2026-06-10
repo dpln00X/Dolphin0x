@@ -1,28 +1,128 @@
-<div id="loginOverlay" class="login-overlay">
-    <div class="login-card">
-        <h2 style="color:#fff; margin:0 0 5px 0;">Dolphin0x Netwerk</h2>
-        <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 25px;">Kies een manier om in te loggen:</p>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolphin0x | Secure Platform</title>
+    <style>
+        :root { --bg-main: #080f1a; --bg-panel: #111f38; --accent: #2563eb; --text: #f1f5f9; --success: #10b981; }
+        body { margin: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
         
-        <div id="loginEmailSection" style="display:block;">
-            <input type="email" id="authEmail" class="auth-input" placeholder="E-mailadres">
-            <input type="password" id="authPassword" class="auth-input" placeholder="Wachtwoord">
-            <button class="login-btn btn-primary" onclick="loginEmail()">Inloggen met E-mail</button>
-        </div>
+        .overlay { position: fixed; inset: 0; z-index: 1000; background: var(--bg-main); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .card { background: var(--bg-panel); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #223b63; }
+        .input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #223b63; background: #1a2d4c; color: white; }
+        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; margin: 5px 0; background: var(--accent); color: white; }
+        
+        .sidebar { width: 300px; background: var(--bg-panel); border-right: 1px solid #223b63; display: flex; flex-direction: column; }
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; }
+        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; cursor: pointer; }
+        .avatar-grid { display: flex; gap: 10px; margin: 15px 0; }
+        .avatar-opt { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
+        .avatar-opt.active { border-color: var(--accent); }
+    </style>
+</head>
+<body>
 
-        <div id="loginPhoneSection" style="margin-top:15px; border-top:1px solid var(--border-color); padding-top:15px;">
-            <input type="tel" id="authPhone" class="auth-input" placeholder="Telefoonnummer (bijv. +31612345678)">
-            <button class="login-btn btn-phone" onclick="loginWithPhone()">Doorgaan met Telefoon</button>
+    <div id="loginScreen" class="overlay">
+        <div class="card">
+            <h2>Dolphin0x Login</h2>
+            <input type="email" id="email" class="input" placeholder="E-mail">
+            <input type="password" id="password" class="input" placeholder="Wachtwoord">
+            <button class="btn" onclick="authAction('email')">Inloggen met E-mail</button>
+            <input type="tel" id="phone" class="input" placeholder="+31 6 12345678">
+            <button class="btn" style="background:var(--success)" onclick="authAction('phone')">Inloggen met Telefoon</button>
+            <div id="recaptcha-container"></div>
         </div>
-
-        <div style="margin: 20px 0; color: var(--text-muted); font-size: 0.8rem; display: flex; align-items: center; gap: 10px;">
-            <div style="flex:1; height:1px; background:var(--border-color);"></div>
-            OF
-            <div style="flex:1; height:1px; background:var(--border-color);"></div>
-        </div>
-        
-        <button class="login-btn btn-google" onclick="loginWithGoogle()">🌐 Inloggen met Google</button>
-        <button class="login-btn btn-apple" onclick="loginWithApple()">🍏 Inloggen met Apple</button>
-        
-        <div id="recaptcha-container" style="margin-top:10px;"></div>
     </div>
-</div>
+
+    <div id="settingsScreen" class="overlay" style="display:none;">
+        <div class="card">
+            <h3>Profiel Bewerken</h3>
+            <input type="text" id="editName" class="input" placeholder="Je naam">
+            <div class="avatar-grid" id="avatarGrid"></div>
+            <input type="text" id="customAvatar" class="input" placeholder="Eigen afbeelding URL">
+            <button class="btn" onclick="saveSettings()">Opslaan</button>
+            <button class="btn" style="background:grey" onclick="toggleSettings(false)">Annuleren</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div style="padding:20px; display:flex; align-items:center; gap:10px;">
+            <img id="myAvatar" class="avatar" src="" onclick="toggleSettings(true)">
+            <span id="myName" style="font-weight:bold;">Laden...</span>
+        </div>
+    </div>
+    <div class="chat-area">
+        <div id="msgList" style="flex-grow:1; padding:20px;"></div>
+        <div style="padding:20px; display:flex;">
+            <input type="text" id="msgInput" class="input" placeholder="Typ bericht...">
+            <button class="btn" style="width:80px; margin-left:10px;" onclick="send()">Stuur</button>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
+            authDomain: "dolphin0x.firebaseapp.com",
+            projectId: "dolphin0x",
+            storageBucket: "dolphin0x.firebasestorage.app",
+            messagingSenderId: "397971950369",
+            appId: "1:397971950369:web:06c65ad929479656a10c60"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // Avatar Opties
+        const avatars = ["https://api.dicebear.com/7.x/bottts/svg?seed=1", "https://api.dicebear.com/7.x/bottts/svg?seed=2", "https://api.dicebear.com/7.x/bottts/svg?seed=3"];
+        avatars.forEach(url => {
+            const img = document.createElement('img');
+            img.src = url; img.className = 'avatar-opt';
+            img.onclick = () => { document.getElementById('customAvatar').value = url; document.querySelectorAll('.avatar-opt').forEach(i=>i.classList.remove('active')); img.classList.add('active'); };
+            document.getElementById('avatarGrid').appendChild(img);
+        });
+
+        window.toggleSettings = (show) => document.getElementById('settingsScreen').style.display = show ? 'flex' : 'none';
+        
+        window.authAction = async (type) => {
+            if(type === 'email') {
+                try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
+                catch { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
+            } else {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+                const conf = await signInWithPhoneNumber(auth, document.getElementById('phone').value, window.recaptchaVerifier);
+                const code = prompt("Voer de SMS code in:");
+                if(code) await conf.confirm(code);
+            }
+        };
+
+        window.saveSettings = async () => {
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { 
+                username: document.getElementById('editName').value, 
+                avatarUrl: document.getElementById('customAvatar').value 
+            });
+            toggleSettings(false);
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if(user) {
+                document.getElementById('loginScreen').style.display = 'none';
+                const userRef = doc(db, "users", user.uid);
+                const snap = await getDoc(userRef);
+                if(!snap.exists()) await setDoc(userRef, { username: "Gebruiker", avatarUrl: avatars[0] });
+                
+                const data = (await getDoc(userRef)).data();
+                document.getElementById('myName').innerText = data.username;
+                document.getElementById('myAvatar').src = data.avatarUrl;
+            }
+        });
+
+        window.send = () => { /* Berichten logica kan hier uitgebreid worden */ alert("Bericht verzonden!"); };
+    </script>
+</body>
+</html>
