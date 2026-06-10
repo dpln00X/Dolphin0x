@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x - Pro Media & Call Platform</title>
+    <title>Dolphin0x - Chat & Call Network</title>
     <style>
         :root {
-            /* Donkerblauw Kleurenpalet */
             --bg-main: #0b1528;
             --bg-panel: #111f38;
             --bg-input: #1a2d4c;
@@ -15,7 +14,7 @@
             --text-muted: #94a3b8;
             --accent: #2563eb;
             --accent-hover: #3b82f6;
-            --accent-light: rgba(37, 99, 235, 0.15);
+            --accent-light: rgba(37, 99, 235, 0.2);
             --danger: #ef4444;
             --success: #10b981;
         }
@@ -23,92 +22,51 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Hoofd Layout */
-        .sidebar { width: 340px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; }
-        .main-content { flex-grow: 1; display: flex; flex-direction: column; height: 100vh; overflow-y: auto; background: var(--bg-main); }
-
-        /* Verbeterde Profiel Bar */
-        .profile-bar { padding: 24px 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, #112547, #17325c); }
-        .user-info { display: flex; align-items: center; gap: 14px; }
+        /* Links: Gebruikerslijst & Profiel */
+        .sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; }
         
-        .avatar-container { position: relative; width: 55px; height: 55px; flex-shrink: 0; cursor: pointer; }
-        .avatar { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: #223b63; border: 2px solid var(--accent); transition: transform 0.2s; }
-        .avatar-container:hover .avatar { transform: scale(1.05); }
-        .avatar-upload-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 50%; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; opacity: 0; transition: opacity 0.2s; color: #fff; }
-        .avatar-container:hover .avatar-upload-overlay { opacity: 1; }
+        .profile-bar { padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, #112547, #17325c); display: flex; align-items: center; justify-content: space-between; }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .avatar-sm { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
+        .username { font-weight: 700; font-size: 1rem; color: #ffffff; }
+        .edit-name-link { font-size: 0.75rem; color: var(--accent-hover); cursor: pointer; text-decoration: underline; }
 
-        .profile-details { display: flex; flex-direction: column; gap: 4px; }
-        .username { font-weight: 700; font-size: 1.1rem; color: #ffffff; letter-spacing: 0.5px; }
-        .edit-name-btn { font-size: 0.75rem; color: var(--accent-hover); cursor: pointer; background: none; border: none; padding: 0; text-align: left; text-decoration: underline; }
-        .edit-name-btn:hover { color: #60a5fa; }
-
-        /* Tabs / Navigatie */
-        .nav-tabs { display: flex; border-bottom: 1px solid var(--border-color); background: #0e1a30; }
-        .nav-tab { flex: 1; padding: 14px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); transition: all 0.2s; }
-        .nav-tab.active { color: var(--text-main); border-bottom: 3px solid var(--accent); background: var(--bg-panel); }
-
-        /* Gebruikerslijst */
-        .list-container { flex-grow: 1; overflow-y: auto; padding: 12px; }
-        .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 10px; cursor: pointer; transition: background 0.2s; margin-bottom: 6px; border: 1px solid transparent; }
+        .sidebar-title { padding: 15px 20px 5px 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); letter-spacing: 1px; }
+        .list-container { flex-grow: 1; overflow-y: auto; padding: 10px; }
+        .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; cursor: pointer; transition: background 0.2s; margin-bottom: 4px; border: 1px solid transparent; }
         .user-item:hover { background: var(--bg-input); border-color: var(--border-color); }
         .user-item.active { background: var(--accent-light); border-color: var(--accent); }
-        .avatar-sm { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 1px solid var(--border-color); }
 
         /* Knoppen */
-        button { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: background 0.15s, transform 0.1s; }
+        button { background: var(--accent); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
         button:hover { background: var(--accent-hover); }
-        button:active { transform: scale(0.98); }
-        .btn-round { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; }
+        .btn-call { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1.1rem; background: var(--success); }
+        .btn-call:hover { background: #34d399; }
         .btn-danger { background: var(--danger); }
         .btn-danger:hover { background: #f87171; }
-        .btn-success { background: var(--success); }
-        .btn-success:hover { background: #34d399; }
 
-        /* Feed & Posts */
-        .feed-container { max-width: 640px; margin: 30px auto; width: 100%; padding: 0 20px; }
+        /* Rechts: Chatvenster */
+        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #080f1a; position: relative; }
+        .chat-blank { flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--text-muted); gap: 10px; }
         
-        .upload-card { background: var(--bg-panel); border-radius: 14px; padding: 20px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
-        .upload-card input[type="text"] { width: 100%; padding: 12px 16px; border-radius: 24px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); outline: none; margin-bottom: 14px; }
-        .upload-card input[type="text"]::placeholder { color: var(--text-muted); }
+        .chat-header { background: var(--bg-panel); padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-weight: 700; box-shadow: 0 4px 10px rgba(0,0,0,0.15); }
+        .chat-messages { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
         
-        .post-card { background: var(--bg-panel); border-radius: 14px; border: 1px solid var(--border-color); margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.15); overflow: hidden; }
-        .post-header { padding: 14px 16px; display: flex; align-items: center; gap: 12px; background: rgba(0,0,0,0.1); }
-        .post-author { font-weight: 700; font-size: 0.95rem; color: #ffffff; }
-        .post-caption { padding: 14px 16px; margin: 0; font-size: 1rem; line-height: 1.5; color: #e2e8f0; }
-        
-        .post-media { width: 100%; max-height: 480px; background: #050b14; display: flex; align-items: center; justify-content: center; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); }
-        .post-media img { width: 100%; max-height: 480px; object-fit: contain; }
-        .post-media video { width: 100%; max-height: 480px; object-fit: contain; }
-
-        /* Comment Sectie */
-        .comment-section { padding: 14px 16px; background: #0e182b; border-top: 1px solid var(--border-color); }
-        .comments-list { max-height: 180px; overflow-y: auto; margin-bottom: 12px; display: flex; flex-direction: column; gap: 8px; }
-        .comment-item { font-size: 0.88rem; background: var(--bg-panel); padding: 10px 14px; border-radius: 14px; border: 1px solid var(--border-color); width: fit-content; max-width: 90%; color: #e2e8f0; }
-        .comment-user { font-weight: 700; color: #60a5fa; margin-right: 6px; }
-        .comment-input-box { display: flex; gap: 10px; }
-        .comment-input-box input { flex-grow: 1; padding: 10px 16px; border-radius: 20px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); outline: none; font-size: 0.9rem; }
-
-        /* Direct Chat */
-        .chat-view { display: none; flex-direction: column; height: 100vh; background: #080f1a; }
-        .chat-header { background: var(--bg-panel); padding: 18px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 14px; font-weight: 700; font-size: 1.1rem; box-shadow: 0 2px 8px rgba(0,0,0,0.2); }
-        .chat-messages { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
-        .chat-bubble { padding: 12px 16px; border-radius: 16px; max-width: 65%; font-size: 0.95rem; word-wrap: break-word; line-height: 1.4; }
-        .chat-bubble.me { background: var(--accent); color: #ffffff; align-self: flex-end; border-top-right-radius: 2px; box-shadow: 0 2px 6px rgba(37,99,235,0.3); }
+        .chat-bubble { padding: 12px 16px; border-radius: 14px; max-width: 60%; font-size: 0.95rem; word-wrap: break-word; line-height: 1.4; }
+        .chat-bubble.me { background: var(--accent); color: white; align-self: flex-end; border-top-right-radius: 2px; }
         .chat-bubble.them { background: var(--bg-panel); color: var(--text-main); align-self: flex-start; border-top-left-radius: 2px; border: 1px solid var(--border-color); }
+        
         .chat-input-bar { padding: 16px 24px; background: var(--bg-panel); display: flex; gap: 12px; align-items: center; border-top: 1px solid var(--border-color); }
-        .chat-input-bar input { flex-grow: 1; padding: 12px 18px; border-radius: 24px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); outline: none; }
+        .chat-input-bar input { flex-grow: 1; padding: 12px 18px; border-radius: 24px; border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-main); outline: none; font-size: 0.95rem; }
 
-        /* Oproep / Calling Overlay */
-        .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,11,22,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .video-grid { display: flex; gap: 24px; margin-bottom: 30px; width: 85%; max-width: 1000px; }
-        .video-box { flex: 1; background: #111f38; border-radius: 16px; overflow: hidden; height: 450px; position: relative; border: 2px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        /* Volledig Scherm Video Oproep Overlay */
+        .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,11,22,0.96); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; color: white; }
+        .video-grid { display: flex; gap: 20px; margin-bottom: 30px; width: 85%; max-width: 950px; }
+        .video-box { flex: 1; background: #111f38; border-radius: 12px; overflow: hidden; height: 420px; position: relative; border: 2px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .video-box video { width: 100%; height: 100%; object-fit: cover; }
-        .video-label { position: absolute; bottom: 14px; left: 14px; background: rgba(11,21,40,0.8); padding: 6px 12px; border-radius: 6px; font-size: 0.85rem; border: 1px solid var(--border-color); }
+        .video-label { position: absolute; bottom: 12px; left: 12px; background: rgba(11,21,40,0.8); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; border: 1px solid var(--border-color); }
         .call-controls { display: flex; gap: 20px; }
-
-        /* Pulseffect tijdens uploads */
-        .uploading-pulse { animation: pulse 1.5s infinite; opacity: 0.6; pointer-events: none; }
-        @keyframes pulse { 0% { opacity: 0.8; } 50% { opacity: 0.4; } 100% { opacity: 0.8; } }
+        .btn-hangup { width: 50px; height: 50px; border-radius: 50%; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; padding: 0; }
     </style>
 </head>
 <body>
@@ -116,56 +74,41 @@
     <div class="sidebar">
         <div class="profile-bar">
             <div class="user-info">
-                <input type="file" id="avatarUploadInput" accept="image/*" style="display:none;" onchange="uploadMyAvatar(this)">
-                <div class="avatar-container" onclick="document.getElementById('avatarUploadInput').click()" title="Verander profielfoto">
-                    <img id="myAvatar" src="https://www.w3schools.com/howto/img_avatar.png" class="avatar">
-                    <div class="avatar-upload-overlay">UPLOAD</div>
-                </div>
-                <div class="profile-details">
+                <img src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm">
+                <div>
                     <div id="myName" class="username">Laden...</div>
-                    <button class="edit-name-btn" onclick="editProfileName()">Naam aanpassen</button>
+                    <span class="edit-name-link" onclick="editProfileName()">Naam wijzigen</span>
                 </div>
             </div>
         </div>
 
-        <div class="nav-tabs">
-            <div id="tabFeed" class="nav-tab active" onclick="switchView('feed')">Media Feed</div>
-            <div id="tabChats" class="nav-tab" onclick="switchView('chats')">Direct Messages</div>
-        </div>
-
-        <div id="listContainer" class="list-container"></div>
+        <div class="sidebar-title">Actieve Gebruikers</div>
+        <div id="userListContainer" class="list-container"></div>
     </div>
 
-    <div id="mainFeedView" class="main-content">
-        <div class="feed-container">
-            <div class="upload-card" id="feedUploadCard">
-                <input type="text" id="postCaption" placeholder="Schrijf een vette beschrijving...">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <input type="file" id="postFile" accept="image/*,video/*" style="display:none;" onchange="document.getElementById('fileLabel').innerText = this.files[0].name">
-                    <button class="btn-success" onclick="document.getElementById('postFile').click()">Kies Foto/Video</button>
-                    <span id="fileLabel" style="font-size:0.85rem; color:var(--text-muted);">Geen bestand gekozen</span>
-                    <button id="postSubmitBtn" onclick="submitPost()">Post Delen</button>
-                </div>
+    <div class="chat-area">
+        <div id="chatBlank" class="chat-blank">
+            <span style="font-size: 3rem;">💬</span>
+            <p>Selecteer iemand in de lijst om te chatten of te bellen.</p>
+        </div>
+
+        <div id="chatActiveBox" style="display: none; flex-direction: column; height: 100%;">
+            <div class="chat-header">
+                <img id="chatTargetAvatar" src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm" style="width:32px; height:32px;">
+                <span id="chatTargetName">Gebruiker</span>
             </div>
-
-            <div id="feedGrid"></div>
-        </div>
-    </div>
-
-    <div id="mainChatView" class="main-content chat-view">
-        <div class="chat-header">
-            <img id="chatTargetAvatar" src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm">
-            <span id="chatTargetName">Gebruiker</span>
-        </div>
-        <div id="chatMessages" class="chat-messages"></div>
-        <div class="chat-input-bar">
-            <input type="text" id="chatMessageInput" placeholder="Typ een bericht..." onkeydown="if(event.key==='Enter') sendDirectMessage()">
-            <button onclick="sendDirectMessage()">Verzenden</button>
+            
+            <div id="chatMessages" class="chat-messages"></div>
+            
+            <div class="chat-input-bar">
+                <input type="text" id="chatMessageInput" placeholder="Typ een bericht..." onkeydown="if(event.key==='Enter') sendDirectMessage()">
+                <button onclick="sendDirectMessage()">Verstuur</button>
+            </div>
         </div>
     </div>
 
     <div id="callOverlay" class="call-overlay">
-        <h2 id="callStatusText">Verbinding opbouwen...</h2>
+        <h2 id="callStatusText">Verbinden...</h2>
         <div class="video-grid">
             <div class="video-box">
                 <video id="localVideo" autoplay playsinline muted></video>
@@ -177,7 +120,7 @@
             </div>
         </div>
         <div class="call-controls">
-            <button class="btn-danger btn-round" onclick="hangUpCall()" style="font-size: 1.2rem;">✕</button>
+            <button class="btn-danger btn-hangup" onclick="hangUpCall()">✕</button>
         </div>
     </div>
 
@@ -185,7 +128,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, query, orderBy, onSnapshot, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
@@ -200,99 +142,62 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const storage = getStorage(app);
 
         let currentUser = null;
-        let activeTab = 'feed'; 
         let activeChatUid = null;
         let usersCache = {};
         let unsubscribeChat = null;
 
-        // WebRTC Config
+        // WebRTC Config & STUN-servers van Google
         let localStream = null;
         let remoteStream = null;
         let peerConnection = null;
         let activeCallId = null;
         const servers = { iceServers: [{ urls: ['ice1.l.google.com:19002', 'ice2.l.google.com:19002'] }], iceCandidatePoolSize: 10 };
 
-        const defaultAvatar = "https://www.w3schools.com/howto/img_avatar.png";
-
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 currentUser = user;
+                
+                // Zorg dat de gebruiker in de Firestore database staat
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
-                
                 if (!userDoc.exists()) {
-                    await setDoc(userDocRef, { uid: user.uid, username: user.email.split('@')[0], avatarUrl: defaultAvatar });
+                    await setDoc(userDocRef, { uid: user.uid, username: user.email.split('@')[0] });
                 }
 
+                // Luister realtime naar alle online gebruikers
                 onSnapshot(collection(db, "users"), (snapshot) => {
                     usersCache = {};
                     snapshot.forEach(d => usersCache[d.id] = d.data());
                     
-                    const me = usersCache[currentUser.uid];
-                    if(me) {
-                        document.getElementById("myName").innerText = me.username;
-                        document.getElementById("myAvatar").src = me.avatarUrl || defaultAvatar;
+                    if(usersCache[currentUser.uid]) {
+                        document.getElementById("myName").innerText = usersCache[currentUser.uid].username;
                     }
-                    renderSidebarList();
+                    renderUserList();
                 });
 
-                loadFeedPosts();
                 listenForIncomingCalls();
             } else {
-                alert("Geen actieve sessie. Zorg dat je bent ingelogd!");
+                alert("Log eerst in via de hoofdapp.");
             }
         });
 
-        // 1. DYNAMISCHE PROFIEL UPDATES (FOTO + NAAM)
+        // Gebruikersnaam aanpassen
         window.editProfileName = async function() {
-            const newName = prompt("Voer je nieuwe gebruikersnaam in:");
+            const newName = prompt("Kies een nieuwe naam:");
             if(newName && newName.trim() !== "") {
                 await updateDoc(doc(db, "users", currentUser.uid), { username: newName.trim() });
             }
         };
 
-        window.uploadMyAvatar = async function(input) {
-            const file = input.files[0];
-            if (!file || !currentUser) return;
-
-            const avatarImg = document.getElementById("myAvatar");
-            avatarImg.style.opacity = "0.4";
-
-            const fileRef = ref(storage, `user_avatars/${currentUser.uid}.${file.name.split('.').pop()}`);
-            try {
-                const snap = await uploadBytes(fileRef, file);
-                const downloadUrl = await getDownloadURL(snap.ref);
-                
-                await updateDoc(doc(db, "users", currentUser.uid), { avatarUrl: downloadUrl });
-                avatarImg.src = downloadUrl;
-            } catch (err) {
-                alert("Uploaden van profielfoto mislukt: " + err.message);
-            } finally {
-                avatarImg.style.opacity = "1";
-            }
-        };
-
-        window.switchView = function(view) {
-            activeTab = view;
-            document.getElementById("tabFeed").classList.toggle("active", view === 'feed');
-            document.getElementById("tabChats").classList.toggle("active", view === 'chats');
-            renderSidebarList();
-
-            if(view === 'feed') {
-                document.getElementById("mainFeedView").style.display = "flex";
-                document.getElementById("mainChatView").style.display = "none";
-            }
-        };
-
-        function renderSidebarList() {
-            const listEl = document.getElementById("listContainer");
-            listEl.innerHTML = "";
+        // Bouw de contactenlijst op
+        function renderUserList() {
+            const container = document.getElementById("userListContainer");
+            container.innerHTML = "";
 
             Object.keys(usersCache).forEach(uid => {
-                if (uid === currentUser.uid) return;
+                if (uid === currentUser.uid) return; // Jezelf niet tonen
                 const u = usersCache[uid];
 
                 const item = document.createElement("div");
@@ -300,145 +205,36 @@
                 
                 item.innerHTML = `
                     <div class="user-info">
-                        <img src="${u.avatarUrl || defaultAvatar}" class="avatar-sm">
+                        <img src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm" style="width:30px; height:30px; border:none;">
                         <span style="font-weight:600;">${u.username}</span>
                     </div>
-                    <div class="call-actions">
-                        <button class="btn-success btn-round" onclick="startCall('${uid}')">📞</button>
-                    </div>
+                    <button class="btn-call" onclick="startCall('${uid}')" title="Bellen">📞</button>
                 `;
                 
+                // Klikken op de balk opent de chat, klikken op de knop belt
                 item.addEventListener('click', (e) => {
-                    if(e.target.tagName !== 'BUTTON') openDirectChat(uid);
+                    if(e.target.tagName !== 'BUTTON') openChat(uid);
                 });
 
-                listEl.appendChild(item);
+                container.appendChild(item);
             });
         }
 
-        // 2. TIMELINE / MEDIA FEED
-        window.submitPost = async function() {
-            const caption = document.getElementById("postCaption").value.trim();
-            const fileInput = document.getElementById("postFile");
-            const file = fileInput.files[0];
-
-            if(!file) return alert("Kies eerst een bestand!");
-
-            const uploadCard = document.getElementById("feedUploadCard");
-            const submitBtn = document.getElementById("postSubmitBtn");
-            uploadCard.classList.add("uploading-pulse");
-            submitBtn.innerText = "Uploaden...";
-
-            const isVideo = file.type.startsWith("video/");
-            const storagePath = `posts_media/${Date.now()}_${currentUser.uid}.${file.name.split('.').pop()}`;
-            const fileRef = ref(storage, storagePath);
-
-            try {
-                const snap = await uploadBytes(fileRef, file);
-                const url = await getDownloadURL(snap.ref);
-
-                await addDoc(collection(db, "posts"), {
-                    userId: currentUser.uid,
-                    authorName: usersCache[currentUser.uid].username,
-                    authorAvatar: usersCache[currentUser.uid].avatarUrl || defaultAvatar,
-                    caption: caption,
-                    mediaUrl: url,
-                    mediaType: isVideo ? "video" : "image",
-                    timestamp: new Date()
-                });
-
-                document.getElementById("postCaption").value = "";
-                fileInput.value = "";
-                document.getElementById("fileLabel").innerText = "Geen bestand gekozen";
-            } catch(e) {
-                alert("Posten mislukt: " + e.message);
-            } finally {
-                uploadCard.classList.remove("uploading-pulse");
-                submitBtn.innerText = "Post Delen";
-            }
-        };
-
-        function loadFeedPosts() {
-            const q = query(collection(db, "posts"), orderBy("timestamp", "desc"));
-            onSnapshot(q, (snapshot) => {
-                const feedGrid = document.getElementById("feedGrid");
-                feedGrid.innerHTML = "";
-
-                snapshot.forEach(docSnap => {
-                    const post = docSnap.data();
-                    const postId = docSnap.id;
-
-                    const postEl = document.createElement("div");
-                    postEl.className = "post-card";
-
-                    let mediaTag = post.mediaType === 'video' ? `<video src="${post.mediaUrl}" controls preload="metadata"></video>` : `<img src="${post.mediaUrl}">`;
-
-                    postEl.innerHTML = `
-                        <div class="post-header">
-                            <img src="${post.authorAvatar || defaultAvatar}" class="avatar-sm">
-                            <div class="post-author">${post.authorName}</div>
-                        </div>
-                        <p class="post-caption">${escapeHTML(post.caption)}</p>
-                        <div class="post-media">${mediaTag}</div>
-                        <div class="comment-section">
-                            <div class="comments-list" id="comments-${postId}"></div>
-                            <div class="comment-input-box">
-                                <input type="text" id="input-${postId}" placeholder="Schrijf een reactie...">
-                                <button onclick="submitComment('${postId}')">Reageer</button>
-                            </div>
-                        </div>
-                    `;
-                    feedGrid.appendChild(postEl);
-                    loadComments(postId);
-                });
-            });
-        }
-
-        window.submitComment = async function(postId) {
-            const input = document.getElementById(`input-${postId}`);
-            const text = input.value.trim();
-            if(!text) return;
-
-            await addDoc(collection(db, "posts", postId, "comments"), {
-                userId: currentUser.uid,
-                username: usersCache[currentUser.uid].username,
-                text: text,
-                timestamp: new Date()
-            });
-            input.value = "";
-        };
-
-        function loadComments(postId) {
-            const q = query(collection(db, "posts", postId, "comments"), orderBy("timestamp", "asc"));
-            onSnapshot(q, (snapshot) => {
-                const box = document.getElementById(`comments-${postId}`);
-                if(!box) return;
-                box.innerHTML = "";
-                snapshot.forEach(d => {
-                    const c = d.data();
-                    box.innerHTML += `
-                        <div class="comment-item">
-                            <span class="comment-user">${c.username}:</span><span>${escapeHTML(c.text)}</span>
-                        </div>
-                    `;
-                });
-            });
-        }
-
-        // 3. PRIVATE DM CHAT SYSTEM
-        function openDirectChat(targetUid) {
+        // CHATTEN
+        function openChat(targetUid) {
             activeChatUid = targetUid;
-            document.getElementById("mainFeedView").style.display = "none";
-            document.getElementById("mainChatView").style.display = "flex";
+            document.getElementById("chatBlank").style.display = "none";
+            document.getElementById("chatActiveBox").style.display = "flex";
             
             document.getElementById("chatTargetName").innerText = usersCache[targetUid].username;
-            document.getElementById("chatTargetAvatar").src = usersCache[targetUid].avatarUrl || defaultAvatar;
 
             if(unsubscribeChat) unsubscribeChat();
 
+            // Unieke chatroom ID maken op basis van alfabetische volgorde UID's
             const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
             const q = query(collection(db, "direct_chats", chatId, "messages"), orderBy("timestamp", "asc"));
 
+            // Berichten live inladen
             unsubscribeChat = onSnapshot(q, (snapshot) => {
                 const msgBox = document.getElementById("chatMessages");
                 msgBox.innerHTML = "";
@@ -449,6 +245,8 @@
                 });
                 msgBox.scrollTop = msgBox.scrollHeight;
             });
+
+            renderUserList();
         }
 
         window.sendDirectMessage = async function() {
@@ -465,7 +263,7 @@
             input.value = "";
         };
 
-        // 4. WEBRTC SIGNALLING MET FIREBASE
+        // BELLEN VIA WEBRTC
         window.startCall = async function(targetUid) {
             document.getElementById("callOverlay").style.display = "flex";
             document.getElementById("callStatusText").innerText = "Oproep verzenden...";
@@ -523,7 +321,7 @@
                             activeCallId = change.doc.id;
                             const callerName = usersCache[callData.caller]?.username || "Iemand";
                             
-                            if(confirm(`Inkomende video-oproep van ${callerName}! Opnemen?`)) {
+                            if(confirm(`Inkomende oproep van ${callerName}! Wil je opnemen?`)) {
                                 acceptIncomingCall(change.doc.ref, callData);
                             } else {
                                 await updateDoc(change.doc.ref, { status: "ended" });
