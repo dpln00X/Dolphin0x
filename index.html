@@ -2,23 +2,19 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x | Secure Platform</title>
+    <title>Dolphin0x | Platform</title>
     <style>
         :root { --bg-main: #080f1a; --bg-panel: #111f38; --accent: #2563eb; --text: #f1f5f9; --success: #10b981; }
         body { margin: 0; font-family: sans-serif; background: var(--bg-main); color: var(--text); height: 100vh; display: flex; overflow: hidden; }
-        
-        .overlay { position: fixed; inset: 0; z-index: 1000; background: var(--bg-main); display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .overlay { position: fixed; inset: 0; background: var(--bg-main); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px; }
         .card { background: var(--bg-panel); padding: 30px; border-radius: 16px; width: 100%; max-width: 400px; border: 1px solid #223b63; }
         .input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid #223b63; background: #1a2d4c; color: white; }
         .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; margin: 5px 0; background: var(--accent); color: white; }
-        
         .sidebar { width: 300px; background: var(--bg-panel); border-right: 1px solid #223b63; display: flex; flex-direction: column; }
         .chat-area { flex-grow: 1; display: flex; flex-direction: column; }
-        .avatar { width: 45px; height: 45px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; cursor: pointer; }
-        .avatar-grid { display: flex; gap: 10px; margin: 15px 0; }
-        .avatar-opt { width: 45px; height: 45px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; }
-        .avatar-opt.active { border-color: var(--accent); }
+        .avatar { width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--accent); object-fit: cover; cursor: pointer; }
+        #videoModal { display: none; position: fixed; inset: 0; background: black; z-index: 10000; padding: 20px; }
+        video { width: 45%; height: 300px; background: #222; margin: 10px; }
     </style>
 </head>
 <body>
@@ -28,9 +24,10 @@
             <h2>Dolphin0x Login</h2>
             <input type="email" id="email" class="input" placeholder="E-mail">
             <input type="password" id="password" class="input" placeholder="Wachtwoord">
-            <button class="btn" onclick="authAction('email')">Inloggen met E-mail</button>
-            <input type="tel" id="phone" class="input" placeholder="+31 6 12345678">
-            <button class="btn" style="background:var(--success)" onclick="authAction('phone')">Inloggen met Telefoon</button>
+            <button class="btn" onclick="authAction('email')">E-mail Inloggen</button>
+            <input type="tel" id="phone" class="input" placeholder="+31 6...">
+            <button class="btn" style="background:var(--success)" onclick="authAction('phone')">Telefoon Inloggen</button>
+            <button class="btn" style="background:white; color:black" onclick="authAction('google')">Google</button>
             <div id="recaptcha-container"></div>
         </div>
     </div>
@@ -38,32 +35,38 @@
     <div id="settingsScreen" class="overlay" style="display:none;">
         <div class="card">
             <h3>Profiel Bewerken</h3>
-            <input type="text" id="editName" class="input" placeholder="Je naam">
-            <div class="avatar-grid" id="avatarGrid"></div>
-            <input type="text" id="customAvatar" class="input" placeholder="Eigen afbeelding URL">
+            <input type="text" id="editName" class="input" placeholder="Naam">
+            <input type="text" id="customAvatar" class="input" placeholder="Avatar URL">
             <button class="btn" onclick="saveSettings()">Opslaan</button>
-            <button class="btn" style="background:grey" onclick="toggleSettings(false)">Annuleren</button>
+            <button class="btn" style="background:grey" onclick="toggleSettings(false)">Sluiten</button>
         </div>
     </div>
 
     <div class="sidebar">
-        <div style="padding:20px; display:flex; align-items:center; gap:10px;">
-            <img id="myAvatar" class="avatar" src="" onclick="toggleSettings(true)">
-            <span id="myName" style="font-weight:bold;">Laden...</span>
+        <div style="padding:20px; cursor:pointer;" onclick="toggleSettings(true)">
+            <img id="myAvatar" class="avatar" src="">
+            <span id="myName" style="margin-left:10px;">Laden...</span>
         </div>
+        <button class="btn" onclick="startCall()">Video Bellen</button>
     </div>
     <div class="chat-area">
-        <div id="msgList" style="flex-grow:1; padding:20px;"></div>
+        <div id="msgList" style="flex-grow:1; padding:20px; overflow-y:auto;"></div>
         <div style="padding:20px; display:flex;">
-            <input type="text" id="msgInput" class="input" placeholder="Typ bericht...">
+            <input type="text" id="msgInput" class="input" placeholder="Bericht...">
             <button class="btn" style="width:80px; margin-left:10px;" onclick="send()">Stuur</button>
         </div>
     </div>
 
+    <div id="videoModal">
+        <video id="localVideo" autoplay playsinline muted></video>
+        <video id="remoteVideo" autoplay playsinline></video>
+        <button class="btn" onclick="hangup()">Ophangen</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier, GoogleAuthProvider, signInWithPopup, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
@@ -77,26 +80,20 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        let pc = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
 
-        // Avatar Opties
-        const avatars = ["https://api.dicebear.com/7.x/bottts/svg?seed=1", "https://api.dicebear.com/7.x/bottts/svg?seed=2", "https://api.dicebear.com/7.x/bottts/svg?seed=3"];
-        avatars.forEach(url => {
-            const img = document.createElement('img');
-            img.src = url; img.className = 'avatar-opt';
-            img.onclick = () => { document.getElementById('customAvatar').value = url; document.querySelectorAll('.avatar-opt').forEach(i=>i.classList.remove('active')); img.classList.add('active'); };
-            document.getElementById('avatarGrid').appendChild(img);
-        });
+        window.toggleSettings = (s) => document.getElementById('settingsScreen').style.display = s ? 'flex' : 'none';
 
-        window.toggleSettings = (show) => document.getElementById('settingsScreen').style.display = show ? 'flex' : 'none';
-        
         window.authAction = async (type) => {
             if(type === 'email') {
                 try { await signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
                 catch { await createUserWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('password').value); }
+            } else if(type === 'google') {
+                await signInWithPopup(auth, new GoogleAuthProvider());
             } else {
                 window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
                 const conf = await signInWithPhoneNumber(auth, document.getElementById('phone').value, window.recaptchaVerifier);
-                const code = prompt("Voer de SMS code in:");
+                const code = prompt("SMS Code:");
                 if(code) await conf.confirm(code);
             }
         };
@@ -109,20 +106,32 @@
             toggleSettings(false);
         };
 
+        window.send = async () => {
+            const text = document.getElementById('msgInput').value;
+            await addDoc(collection(db, "chat"), { text, uid: auth.currentUser.uid, time: Date.now() });
+            document.getElementById('msgInput').value = "";
+        };
+
+        window.startCall = async () => {
+            document.getElementById('videoModal').style.display = 'block';
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById('localVideo').srcObject = stream;
+            stream.getTracks().forEach(t => pc.addTrack(t, stream));
+        };
+
+        window.hangup = () => location.reload();
+
         onAuthStateChanged(auth, async (user) => {
             if(user) {
                 document.getElementById('loginScreen').style.display = 'none';
-                const userRef = doc(db, "users", user.uid);
-                const snap = await getDoc(userRef);
-                if(!snap.exists()) await setDoc(userRef, { username: "Gebruiker", avatarUrl: avatars[0] });
-                
-                const data = (await getDoc(userRef)).data();
-                document.getElementById('myName').innerText = data.username;
-                document.getElementById('myAvatar').src = data.avatarUrl;
+                const ref = doc(db, "users", user.uid);
+                if(!(await getDoc(ref)).exists()) await setDoc(ref, { username: "Gebruiker", avatarUrl: "https://api.dicebear.com/7.x/bottts/svg?seed=1" });
+                onSnapshot(ref, (s) => {
+                    document.getElementById('myName').innerText = s.data().username;
+                    document.getElementById('myAvatar').src = s.data().avatarUrl;
+                });
             }
         });
-
-        window.send = () => { /* Berichten logica kan hier uitgebreid worden */ alert("Bericht verzonden!"); };
     </script>
 </body>
 </html>
