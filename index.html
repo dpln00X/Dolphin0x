@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x - Auth, Chat & Call</title>
+    <title>Dolphin0x - Ultimate Network</title>
     <style>
         :root {
             --bg-main: #0b1528;
@@ -22,14 +22,28 @@
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
 
-        /* Login Scherm Overlay */
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 2000; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; }
-        .login-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 40px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); text-align: center; max-width: 400px; width: 90%; }
-        .login-btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 12px; font-size: 1rem; transition: background 0.2s; }
+        /* Login Scherm Overlay & Scroll */
+        .login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 2000; display: flex; align-items: center; justify-content: center; overflow-y: auto; padding: 20px; }
+        .login-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); text-align: center; max-width: 420px; width: 100%; }
+        
+        /* Input velden voor Email/Telefoon */
+        .auth-form { display: flex; flex-direction: column; gap: 10px; margin: 20px 0; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; }
+        .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none; font-size: 0.95rem; }
+        .auth-input::placeholder { color: var(--text-muted); }
+        
+        .login-btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px; font-size: 0.95rem; transition: background 0.2s, transform 0.1s; }
+        .login-btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--accent); color: white; }
+        .btn-primary:hover { background: var(--accent-hover); }
         .btn-google { background: #ffffff; color: #000000; }
         .btn-google:hover { background: #f1f5f9; }
         .btn-apple { background: #000000; color: #ffffff; }
         .btn-apple:hover { background: #1e293b; }
+        
+        .divider { color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin: 15px 0; letter-spacing: 1px; display: flex; align-items: center; gap: 10px; }
+        .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: var(--border-color); }
+
+        .toggle-auth-mode { color: var(--accent-hover); cursor: pointer; text-decoration: underline; font-size: 0.9rem; background: none; border: none; margin-top: 10px; }
 
         /* App Layout */
         .sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; }
@@ -44,12 +58,9 @@
         .user-item:hover { background: var(--bg-input); border-color: var(--border-color); }
         .user-item.active { background: var(--accent-light); border-color: var(--accent); }
 
-        button { background: var(--accent); color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
-        button:hover { background: var(--accent-hover); }
-        .btn-call { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1.1rem; background: var(--success); }
+        .btn-call { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 1.1rem; background: var(--success); color: white; border: none; cursor: pointer; }
         .btn-call:hover { background: #34d399; }
-        .btn-danger { background: var(--danger); }
-        .btn-logout { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 4px 8px; font-size: 0.75rem; }
+        .btn-logout { background: transparent; color: var(--text-muted); border: 1px solid var(--border-color); padding: 4px 8px; font-size: 0.75rem; border-radius: 4px; cursor: pointer; }
         .btn-logout:hover { background: rgba(239, 68, 68, 0.1); color: var(--danger); }
 
         /* Chatvenster */
@@ -71,28 +82,44 @@
         .video-box { flex: 1; background: #111f38; border-radius: 12px; overflow: hidden; height: 420px; position: relative; border: 2px solid var(--border-color); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         .video-box video { width: 100%; height: 100%; object-fit: cover; background: #111f38; }
         .video-label { position: absolute; bottom: 12px; left: 12px; background: rgba(11,21,40,0.8); padding: 4px 10px; border-radius: 4px; font-size: 0.8rem; border: 1px solid var(--border-color); }
-        .call-controls { display: flex; gap: 20px; }
-        .btn-hangup { width: 50px; height: 50px; border-radius: 50%; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; padding: 0; }
+        .btn-hangup { width: 50px; height: 50px; border-radius: 50%; font-size: 1.3rem; display: flex; align-items: center; justify-content: center; padding: 0; background: var(--danger); color: white; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="loginOverlay" class="login-overlay">
         <div class="login-card">
-            <h2 style="margin-top:0; color:#fff;">Dolphin0x Network</h2>
-            <p style="color:var(--text-muted); margin-bottom: 30px;">Log veilig in met je Google- of Apple-account om te chatten en bellen.</p>
+            <h2 id="txtAuthTitle" style="margin-top:0; color:#fff;">Dolphin0x</h2>
+            <p id="txtAuthDesc" style="color:var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Log in of registreer om te bellen en chatten.</p>
+            
+            <div class="auth-form">
+                <input type="email" id="authEmail" class="auth-input" placeholder="E-mailadres">
+                <input type="password" id="authPassword" class="auth-input" placeholder="Wachtwoord">
+                
+                <div class="divider" id="txtOrPhone" style="margin: 8px 0;">Of via SMS</div>
+                <input type="tel" id="authPhone" class="auth-input" placeholder="Telefoonnummer (bvb +31612345678)">
+                <input type="text" id="authSmsCode" class="auth-input" placeholder="SMS Verificatiecode" style="display: none;">
+                
+                <button class="login-btn btn-primary" id="btnMainAuth" onclick="handleEmailPasswordOrPhoneAuth()" style="margin-top: 10px;">Inloggen / Doorgaan</button>
+            </div>
+
+            <button class="toggle-auth-mode" id="btnToggleMode" onclick="toggleAuthMode()">Nog geen account? Registreer hier</button>
+
+            <div class="divider" id="txtOrSocial">Of snelle login</div>
             
             <button class="login-btn btn-google" onclick="loginWithGoogle()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="18" alt="">
-                Inloggen met Google
+                <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" width="16" alt="">
+                Google
             </button>
             
             <button class="login-btn btn-apple" onclick="loginWithApple()">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="16" style="filter:invert(1);" alt="">
-                Inloggen met Apple
+                <img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" width="14" style="filter:invert(1);" alt="">
+                Apple
             </button>
         </div>
     </div>
+
+    <div id="recaptcha-container"></div>
 
     <div class="sidebar">
         <div class="profile-bar">
@@ -100,19 +127,19 @@
                 <img id="myAvatar" src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm">
                 <div>
                     <div id="myName" class="username">Laden...</div>
-                    <button class="btn-logout" onclick="logout()" style="margin-top:4px;">Log uit</button>
+                    <button class="btn-logout" id="btnLogout" onclick="logout()" style="margin-top:4px;">Log uit</button>
                 </div>
             </div>
         </div>
 
-        <div class="sidebar-title">Actieve Leden</div>
+        <div class="sidebar-title" id="txtActiveMembers">Actieve Leden</div>
         <div id="userListContainer" class="list-container"></div>
     </div>
 
     <div class="chat-area">
         <div id="chatBlank" class="chat-blank">
             <span style="font-size: 3rem;">⚡</span>
-            <p>Kies een online gebruiker om een gesprek of call te starten.</p>
+            <p id="txtWelcomeBlank">Kies een online gebruiker om een gesprek of call te starten.</p>
         </div>
 
         <div id="chatActiveBox" style="display: none; flex-direction: column; height: 100%;">
@@ -125,7 +152,7 @@
             
             <div class="chat-input-bar">
                 <input type="text" id="chatMessageInput" placeholder="Typ een bericht..." onkeydown="if(event.key==='Enter') sendDirectMessage()">
-                <button onclick="sendDirectMessage()">Verstuur</button>
+                <button id="btnSend" onclick="sendDirectMessage()">Verstuur</button>
             </div>
         </div>
     </div>
@@ -135,7 +162,7 @@
         <div class="video-grid">
             <div class="video-box">
                 <video id="localVideo" autoplay playsinline muted></video>
-                <div class="video-label">Jij</div>
+                <div class="video-label" id="lblYou">Jij</div>
             </div>
             <div class="video-box">
                 <video id="remoteVideo" autoplay playsinline></video>
@@ -149,7 +176,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, doc, setDoc, updateDoc, query, orderBy, onSnapshot, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -170,108 +197,194 @@
         let activeChatUid = null;
         let usersCache = {};
         let unsubscribeChat = null;
+        let isSignUpMode = false; // Schakelaar tussen login en registratie
+        let confirmationResultSMS = null; // Voor telefoon SMS auth
 
-        // WebRTC Config & STUN Google Servers
+        // WebRTC Config
         let localStream = null;
         let remoteStream = null;
         let peerConnection = null;
         let activeCallId = null;
         const servers = { iceServers: [{ urls: ['ice1.l.google.com:19002', 'ice2.l.google.com:19002'] }], iceCandidatePoolSize: 10 };
 
-        // 1. AUTHENTICATIE STATUS CHECK
+        // DYNAMISCH TAALPAKKET OP BASIS VAN BROWSER-TAAL
+        const languages = {
+            nl: {
+                titleLogin: "Dolphin0x Login", titleRegister: "Account Aanmaken", descLogin: "Log in om direct te chatten en bellen.", descRegister: "Maak een nieuw account aan via e-mail.",
+                phEmail: "E-mailadres", phPass: "Wachtwoord", phPhone: "Telefoonnummer (+31...)", phSms: "SMS Verificatiecode", btnLogin: "Inloggen", btnRegister: "Registreren",
+                toggleToReg: "Nog geen account? Registreer hier", toggleToLog: "Heb je al een account? Log hier in", activeMembers: "Actieve Leden",
+                welcomeBlank: "Kies een online gebruiker om een gesprek of call te starten.", phMsg: "Typ een bericht...", btnSend: "Verstuur", logout: "Log uit",
+                logoutConf: "Weet je zeker dat je wilt uitloggen?", callStart: "Oproep starten...", callActive: "In gesprek", callRinging: "Oproep verzenden...", you: "Jij", other: "Ander", smsSent: "SMS code verzonden!", error: "Fout opgetreden: "
+            },
+            en: {
+                titleLogin: "Dolphin0x Login", titleRegister: "Create Account", descLogin: "Log in to chat and make video calls.", descRegister: "Register a new account via email.",
+                phEmail: "Email Address", phPass: "Password", phPhone: "Phone Number (+31...)", phSms: "SMS Verification Code", btnLogin: "Log In", btnRegister: "Register",
+                toggleToReg: "No account yet? Register here", toggleToLog: "Already have an account? Log in here", activeMembers: "Active Members",
+                welcomeBlank: "Select an online user to start a chat or video call.", phMsg: "Type a message...", btnSend: "Send", logout: "Log out",
+                logoutConf: "Are you sure you want to log out?", callStart: "Starting call...", callActive: "In call", callRinging: "Ringing...", you: "You", other: "Other", smsSent: "SMS code sent!", error: "Error occurred: "
+            },
+            de: {
+                titleLogin: "Dolphin0x Login", titleRegister: "Konto erstellen", descLogin: "Loggen Sie sich ein, um zu chatten und anzurufen.", descRegister: "Registrieren Sie ein neues Konto per E-Mail.",
+                phEmail: "E-Mail-Adresse", phPass: "Passwort", phPhone: "Telefonnummer (+31...)", phSms: "SMS-Verifizierungscode", btnLogin: "Einloggen", btnRegister: "Registrieren",
+                toggleToReg: "Noch kein Konto? Hier registrieren", toggleToLog: "Bereits ein Konto? Hier einloggen", activeMembers: "Aktive Mitglieder",
+                welcomeBlank: "Wählen Sie einen Benutzer uit, um einen Chat oder Anruf zu starten.", phMsg: "Nachricht schreiben...", btnSend: "Senden", logout: "Abmelden",
+                logoutConf: "Sind Sie sicher, dass Sie sich abmelden möchten?", callStart: "Anruf startet...", callActive: "Im Gespräch", callRinging: "Es klingelt...", you: "Du", other: "Anderer", smsSent: "SMS-Code gesendet!", error: "Fehler aufgetreten: "
+            },
+            fr: {
+                titleLogin: "Connexion Dolphin0x", titleRegister: "Créer un compte", descLogin: "Connectez-vous pour discuter et appeler.", descRegister: "Inscrivez-vous avec un nouveau compte e-mail.",
+                phEmail: "Adresse e-mail", phPass: "Mot de passe", phPhone: "Numéro de téléphone (+31...)", phSms: "Code de vérification SMS", btnLogin: "Se connecter", btnRegister: "S'inscrire",
+                toggleToReg: "Pas encore de compte ? S'inscrire", toggleToLog: "Déjà un compte ? Se connecter", activeMembers: "Membres Actifs",
+                welcomeBlank: "Sélectionnez un utilisateur pour démarrer une discussion ou un appel.", phMsg: "Écrivez un message...", btnSend: "Envoyer", logout: "Déconnexion",
+                logoutConf: "Êtes-vous sûr de vouloir vous déconnecter ?", callStart: "Appel en cours...", callActive: "En ligne", callRinging: "Appel en cours...", you: "Vous", other: "Autre", smsSent: "Code SMS envoyé !", error: "Une erreur est survenue: "
+            }
+        };
+
+        // Bepaal de taal (Standaard naar Engels als browser-taal niet in ons pakket zit)
+        const userLang = navigator.language.split('-')[0];
+        const t = languages[userLang] || languages.en;
+
+        // Vertaal alle UI elementen live bij het laden van de pagina
+        function applyTranslations() {
+            document.getElementById("authEmail").placeholder = t.phEmail;
+            document.getElementById("authPassword").placeholder = t.phPass;
+            document.getElementById("authPhone").placeholder = t.phPhone;
+            document.getElementById("authSmsCode").placeholder = t.phSms;
+            document.getElementById("txtActiveMembers").innerText = t.activeMembers;
+            document.getElementById("txtWelcomeBlank").innerText = t.welcomeBlank;
+            document.getElementById("chatMessageInput").placeholder = t.phMsg;
+            document.getElementById("btnSend").innerText = t.btnSend;
+            document.getElementById("btnLogout").innerText = t.logout;
+            document.getElementById("lblYou").innerText = t.you;
+            document.getElementById("remoteVideoLabel").innerText = t.other;
+            updateAuthDOMStrings();
+        }
+
+        function updateAuthDOMStrings() {
+            if (isSignUpMode) {
+                document.getElementById("txtAuthTitle").innerText = t.titleRegister;
+                document.getElementById("txtAuthDesc").innerText = t.descRegister;
+                document.getElementById("btnMainAuth").innerText = t.btnRegister;
+                document.getElementById("btnToggleMode").innerText = t.toggleToLog;
+            } else {
+                document.getElementById("txtAuthTitle").innerText = t.titleLogin;
+                document.getElementById("txtAuthDesc").innerText = t.descLogin;
+                document.getElementById("btnMainAuth").innerText = t.btnLogin;
+                document.getElementById("btnToggleMode").innerText = t.toggleToReg;
+            }
+        }
+
+        window.toggleAuthMode = function() {
+            isSignUpMode = !isSignUpMode;
+            updateAuthDOMStrings();
+        };
+
+        // INITIALISEER APP & RECAPTCHA FOR PHONE SMS
+        applyTranslations();
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
+
         onAuthStateChanged(auth, async (user) => {
             const loginOverlay = document.getElementById("loginOverlay");
             if (user) {
                 currentUser = user;
-                loginOverlay.style.display = "none"; // Verberg login
+                loginOverlay.style.display = "none";
 
                 const userDocRef = doc(db, "users", user.uid);
                 const userDoc = await getDoc(userDocRef);
                 
-                // Als de gebruiker nieuw is, sla de Google/Apple naam en foto op
                 if (!userDoc.exists()) {
                     await setDoc(userDocRef, {
                         uid: user.uid,
-                        username: user.displayName || user.email.split('@')[0],
+                        username: user.displayName || user.phoneNumber || user.email.split('@')[0],
                         avatarUrl: user.photoURL || "https://www.w3schools.com/howto/img_avatar.png"
                     });
                 }
 
-                // Haal alle actieve gebruikers realtime op
                 onSnapshot(collection(db, "users"), (snapshot) => {
                     usersCache = {};
                     snapshot.forEach(d => usersCache[d.id] = d.data());
-                    
                     if(usersCache[currentUser.uid]) {
                         document.getElementById("myName").innerText = usersCache[currentUser.uid].username;
                         document.getElementById("myAvatar").src = usersCache[currentUser.uid].avatarUrl;
                     }
                     renderUserList();
                 });
-
                 listenForIncomingCalls();
             } else {
                 currentUser = null;
-                loginOverlay.style.display = "flex"; // Toon login
+                loginOverlay.style.display = "flex";
             }
         });
 
-        // INLOG METHODES
+        // EMAIL, PASSWORD & PHONE (SMS OTP) HANDLERS
+        window.handleEmailPasswordOrPhoneAuth = async function() {
+            const email = document.getElementById("authEmail").value.trim();
+            const password = document.getElementById("authPassword").value.trim();
+            const phone = document.getElementById("authPhone").value.trim();
+            const smsCode = document.getElementById("authSmsCode").value.trim();
+
+            // 1. Prioriteit: Telefoonnummer verificatie
+            if (phone !== "" && confirmationResultSMS === null) {
+                try {
+                    confirmationResultSMS = await signInWithPhoneNumber(auth, phone, window.recaptchaVerifier);
+                    alert(t.smsSent);
+                    document.getElementById("authSmsCode").style.display = "block";
+                } catch (err) { alert(t.error + err.message); }
+                return;
+            }
+            if (confirmationResultSMS !== null && smsCode !== "") {
+                try {
+                    await confirmationResultSMS.confirm(smsCode);
+                } catch (err) { alert(t.error + err.message); }
+                return;
+            }
+
+            // 2. Email / Wachtwoord authenticatie
+            if (email === "" || password === "") return;
+            try {
+                if (isSignUpMode) {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (err) { alert(t.error + err.message); }
+        };
+
+        // GOOGLE & APPLE AUTH
         window.loginWithGoogle = function() {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(err => alert("Google Login Fout: " + err.message));
+            signInWithPopup(auth, new GoogleAuthProvider()).catch(err => alert(t.error + err.message));
         };
 
         window.loginWithApple = function() {
-            const provider = new OAuthProvider('apple.com');
-            signInWithPopup(auth, provider).catch(err => alert("Apple Login Fout: " + err.message));
+            signInWithPopup(auth, new OAuthProvider('apple.com')).catch(err => alert(t.error + err.message));
         };
 
         window.logout = function() {
-            if(confirm("Weet je zeker dat je wilt uitloggen?")) {
-                signOut(auth).then(() => location.reload());
-            }
+            if(confirm(t.logoutConf)) signOut(auth).then(() => location.reload());
         };
 
-        // 2. GEBRUIKERS EN CONTACTEN LIJST
+        // CONTACTENLIJST & CHAT SYSTEM
         function renderUserList() {
             const container = document.getElementById("userListContainer");
             container.innerHTML = "";
-
             Object.keys(usersCache).forEach(uid => {
                 if (uid === currentUser.uid) return;
                 const u = usersCache[uid];
-
                 const item = document.createElement("div");
                 item.className = `user-item ${activeChatUid === uid ? 'active' : ''}`;
-                
-                item.innerHTML = `
-                    <div class="user-info">
-                        <img src="${u.avatarUrl}" class="avatar-sm" style="width:30px; height:30px;">
-                        <span style="font-weight:600;">${u.username}</span>
-                    </div>
-                    <button class="btn-call" onclick="startCall('${uid}')">📞</button>
-                `;
-                
-                item.addEventListener('click', (e) => {
-                    if(e.target.tagName !== 'BUTTON') openChat(uid);
-                });
-
+                item.innerHTML = `<div class="user-info"><img src="${u.avatarUrl}" class="avatar-sm" style="width:30px; height:30px;"><span>${u.username}</span></div><button class="btn-call" onclick="startCall('${uid}')">📞</button>`;
+                item.addEventListener('click', (e) => { if(e.target.tagName !== 'BUTTON') openChat(uid); });
                 container.appendChild(item);
             });
         }
 
-        // 3. REALTIME PRIVÉ CHAT
         function openChat(targetUid) {
             activeChatUid = targetUid;
             document.getElementById("chatBlank").style.display = "none";
             document.getElementById("chatActiveBox").style.display = "flex";
-            
             document.getElementById("chatTargetName").innerText = usersCache[targetUid].username;
             document.getElementById("chatTargetAvatar").src = usersCache[targetUid].avatarUrl;
 
             if(unsubscribeChat) unsubscribeChat();
-
             const chatId = currentUser.uid < targetUid ? `${currentUser.uid}_${targetUid}` : `${targetUid}_${currentUser.uid}`;
             const q = query(collection(db, "direct_chats", chatId, "messages"), orderBy("timestamp", "asc"));
 
@@ -280,12 +393,10 @@
                 msgBox.innerHTML = "";
                 snapshot.forEach(d => {
                     const m = d.data();
-                    const isMe = m.senderId === currentUser.uid;
-                    msgBox.innerHTML += `<div class="chat-bubble ${isMe ? 'me' : 'them'}">${escapeHTML(m.text)}</div>`;
+                    msgBox.innerHTML += `<div class="chat-bubble ${m.senderId === currentUser.uid ? 'me' : 'them'}">${escapeHTML(m.text)}</div>`;
                 });
                 msgBox.scrollTop = msgBox.scrollHeight;
             });
-
             renderUserList();
         }
 
@@ -293,24 +404,18 @@
             const input = document.getElementById("chatMessageInput");
             const text = input.value.trim();
             if(!text || !activeChatUid) return;
-
             const chatId = currentUser.uid < activeChatUid ? `${currentUser.uid}_${activeChatUid}` : `${activeChatUid}_${currentUser.uid}`;
-            await addDoc(collection(db, "direct_chats", chatId, "messages"), {
-                senderId: currentUser.uid,
-                text: text,
-                timestamp: new Date()
-            });
+            await addDoc(collection(db, "direct_chats", chatId, "messages"), { senderId: currentUser.uid, text: text, timestamp: new Date() });
             input.value = "";
         };
 
-        // 4. VERBETERDE WEBRTC BELLEN
+        // WebRTC CALLING ENGINE
         window.startCall = async function(targetUid) {
             document.getElementById("callOverlay").style.display = "flex";
-            document.getElementById("callStatusText").innerText = "Oproep verzenden...";
+            document.getElementById("callStatusText").innerText = t.callRinging;
 
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             remoteStream = new MediaStream();
-
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
             peerConnection.ontrack = event => event.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
 
@@ -319,49 +424,35 @@
 
             const callDocRef = doc(collection(db, "calls"));
             activeCallId = callDocRef.id;
-
-            peerConnection.onicecandidate = event => {
-                if (event.candidate) addDoc(collection(callDocRef, "callerCandidates"), event.candidate.toJSON());
-            };
+            peerConnection.onicecandidate = event => { if (event.candidate) addDoc(collection(callDocRef, "callerCandidates"), event.candidate.toJSON()); };
 
             const offerDescription = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offerDescription);
-
-            await setDoc(callDocRef, {
-                offer: { type: offerDescription.type, sdp: offerDescription.sdp },
-                caller: currentUser.uid,
-                receiver: targetUid,
-                status: "ringing"
-            });
+            await setDoc(callDocRef, { offer: { type: offerDescription.type, sdp: offerDescription.sdp }, caller: currentUser.uid, receiver: targetUid, status: "ringing" });
 
             onSnapshot(callDocRef, async (snapshot) => {
                 const data = snapshot.data();
                 if (data?.answer && !peerConnection.currentRemoteDescription) {
                     await peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-                    document.getElementById("callStatusText").innerText = "In gesprek";
+                    document.getElementById("callStatusText").innerText = t.callActive;
                 }
                 if (data?.status === "ended") closeCallUI();
             });
 
             onSnapshot(collection(callDocRef, "receiverCandidates"), snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') peerConnection.addIceCandidate(new RTCIceCandidate(change.doc.data()));
-                });
+                snapshot.docChanges().forEach(change => { if (change.type === 'added') peerConnection.addIceCandidate(new RTCIceCandidate(change.doc.data())); });
             });
         };
 
         function listenForIncomingCalls() {
             peerConnection = new RTCPeerConnection(servers);
-
             onSnapshot(collection(db, "calls"), snapshot => {
                 snapshot.docChanges().forEach(async change => {
                     if (change.type === 'added' || change.type === 'modified') {
                         const callData = change.doc.data();
                         if (callData.receiver === currentUser.uid && callData.status === "ringing") {
                             activeCallId = change.doc.id;
-                            const callerName = usersCache[callData.caller]?.username || "Iemand";
-                            
-                            if(confirm(`Inkomende oproep van ${callerName}! Opnemen?`)) {
+                            if(confirm(`Inkomende oproep van ${usersCache[callData.caller]?.username || t.other}!`)) {
                                 acceptIncomingCall(change.doc.ref, callData);
                             } else {
                                 await updateDoc(change.doc.ref, { status: "ended" });
@@ -374,39 +465,27 @@
 
         async function acceptIncomingCall(callDocRef, callData) {
             document.getElementById("callOverlay").style.display = "flex";
-            document.getElementById("callStatusText").innerText = "Verbinden...";
+            document.getElementById("callStatusText").innerText = t.callStart;
 
             localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
             remoteStream = new MediaStream();
-
             localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
             peerConnection.ontrack = event => event.streams[0].getTracks().forEach(track => remoteStream.addTrack(track));
 
             document.getElementById("localVideo").srcObject = localStream;
             document.getElementById("remoteVideo").srcObject = remoteStream;
 
-            peerConnection.onicecandidate = event => {
-                if (event.candidate) addDoc(collection(callDocRef, "receiverCandidates"), event.candidate.toJSON());
-            };
-
+            peerConnection.onicecandidate = event => { if (event.candidate) addDoc(collection(callDocRef, "receiverCandidates"), event.candidate.toJSON()); };
             await peerConnection.setRemoteDescription(new RTCSessionDescription(callData.offer));
+            
             const answerDescription = await peerConnection.createAnswer();
             await peerConnection.setLocalDescription(answerDescription);
-
-            await updateDoc(callDocRef, {
-                answer: { type: answerDescription.type, sdp: answerDescription.sdp },
-                status: "active"
-            });
+            await updateDoc(callDocRef, { answer: { type: answerDescription.type, sdp: answerDescription.sdp }, status: "active" });
 
             onSnapshot(collection(callDocRef, "callerCandidates"), snapshot => {
-                snapshot.docChanges().forEach(change => {
-                    if (change.type === 'added') peerConnection.addIceCandidate(new RTCIceCandidate(change.doc.data()));
-                });
+                snapshot.docChanges().forEach(change => { if (change.type === 'added') peerConnection.addIceCandidate(new RTCIceCandidate(change.doc.data())); });
             });
-
-            onSnapshot(callDocRef, snapshot => {
-                if (snapshot.data()?.status === "ended") closeCallUI();
-            });
+            onSnapshot(callDocRef, snapshot => { if (snapshot.data()?.status === "ended") closeCallUI(); });
         }
 
         window.hangUpCall = async function() {
