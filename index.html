@@ -2,196 +2,23 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x - Accounts, Avatars & Calls</title>
+    <title>Dolphin0x - Full Suite</title>
     <style>
-        :root {
-            --bg-main: #0b1528;
-            --bg-panel: #111f38;
-            --bg-input: #1a2d4c;
-            --border-color: #223b63;
-            --text-main: #f1f5f9;
-            --text-muted: #94a3b8;
-            --accent: #2563eb;
-            --accent-hover: #3b82f6;
-            --accent-light: rgba(37, 99, 235, 0.2);
-            --danger: #ef4444;
-            --success: #10b981;
-        }
-
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { margin: 0; padding: 0; background-color: var(--bg-main); color: var(--text-main); display: flex; height: 100vh; overflow: hidden; }
-
-        /* Login Scherm & Elementen */
-        .login-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: var(--bg-main); z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
-        .login-card { background: var(--bg-panel); border: 1px solid var(--border-color); padding: 30px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); text-align: center; max-width: 440px; width: 100%; margin: auto; }
-        .auth-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-input); color: #fff; outline: none; margin-bottom: 10px; font-size: 0.95rem; }
-        
-        /* Avatar Pick Grid */
-        .avatar-picker-label { text-align: left; font-size: 0.85rem; color: var(--text-muted); margin: 10px 0 6px 2px; font-weight: 600; }
-        .avatar-grid { display: flex; gap: 10px; justify-content: center; margin-bottom: 12px; }
-        .avatar-option { width: 50px; height: 50px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; object-fit: cover; transition: transform 0.1s, border-color 0.2s; }
-        .avatar-option:hover { transform: scale(1.05); }
-        .avatar-option.selected { border-color: var(--accent); transform: scale(1.1); }
-
-        .login-btn { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; border: none; margin-bottom: 8px; font-size: 0.95rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        .btn-primary { background: var(--accent); color: white; }
-        .btn-primary:hover { background: var(--accent-hover); }
-        .btn-google { background: #ffffff; color: #000000; }
-        .btn-apple { background: #000000; color: #ffffff; }
-        .btn-phone { background: #10b981; color: #ffffff; }
-
-        /* App Layout */
-        .sidebar { width: 320px; background: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; z-index: 10; shrink: 0; }
-        .profile-bar { padding: 20px; border-bottom: 1px solid var(--border-color); background: linear-gradient(135deg, #112547, #17325c); display: flex; align-items: center; justify-content: space-between; }
-        .avatar-sm { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent); }
-        .username { font-weight: 700; color: #ffffff; }
-        
-        .nav-tabs { display: flex; border-bottom: 1px solid var(--border-color); background: #0e1a30; }
-        .nav-tab { flex: 1; padding: 12px; text-align: center; cursor: pointer; font-weight: 600; color: var(--text-muted); border-bottom: 3px solid transparent; }
-        .nav-tab.active { color: var(--text-main); border-bottom: 3px solid var(--accent); background: var(--bg-panel); }
-
-        /* Groep maken balk */
-        .create-group-box { padding: 10px 15px; border-bottom: 1px solid var(--border-color); display: flex; gap: 8px; background: #0c172a; }
-        .group-input { flex-grow: 1; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-input); color: white; font-size: 0.85rem; outline: none; }
-        .btn-create-group { background: var(--accent); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 0.85rem; }
-
-        .list-container { flex-grow: 1; overflow-y: auto; padding: 10px; }
-        .user-item { display: flex; align-items: center; justify-content: space-between; padding: 12px; border-radius: 8px; cursor: pointer; margin-bottom: 4px; border: 1px solid transparent; }
-        .user-item:hover { background: var(--bg-input); }
-        .user-item.active { background: var(--accent-light); border: 1px solid var(--accent); }
-        .user-info { display: flex; align-items: center; gap: 12px; }
-        .btn-call { width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--success); color: white; border: none; cursor: pointer; }
-
-        /* Chatvenster */
-        .chat-area { flex-grow: 1; display: flex; flex-direction: column; background: #080f1a; position: relative; }
-        .chat-header { background: var(--bg-panel); padding: 16px 24px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 12px; font-weight: 700; }
-        .btn-back { display: none; background: transparent; border: 1px solid var(--border-color); color: var(--text-muted); padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9rem; }
-        
-        .chat-messages { flex-grow: 1; padding: 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .chat-bubble { padding: 12px 16px; border-radius: 14px; max-width: 65%; font-size: 0.95rem; word-wrap: break-word; }
-        .chat-bubble.me { background: var(--accent); color: white; align-self: flex-end; border-top-right-radius: 2px; }
-        .chat-bubble.them { background: var(--bg-panel); color: var(--text-main); align-self: flex-start; border-top-left-radius: 2px; border: 1px solid var(--border-color); }
-        .chat-author { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 2px; margin-left: 4px; }
-        
-        /* Ruime tekstbalk */
-        .chat-input-bar { padding: 20px 24px; background: var(--bg-panel); display: flex; gap: 14px; border-top: 1px solid var(--border-color); align-items: center; }
-        .chat-input-bar input { flex-grow: 1; padding: 16px 20px; border-radius: 28px; border: 1px solid var(--border-color); background: var(--bg-input); color: white; outline: none; font-size: 1rem; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2); }
-        .chat-input-bar button { background: var(--accent); color: white; border: none; padding: 14px 28px; border-radius: 28px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: background 0.2s; }
-
-        /* Calling Overlay */
-        .call-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(5,11,22,0.95); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; color: white; }
-        .video-grid { display: flex; gap: 20px; width: 80%; height: 60%; margin-bottom: 30px; }
-        .video-box { flex: 1; background: #111f38; border-radius: 12px; overflow: hidden; position: relative; border: 2px solid var(--border-color); }
-        .video-box video { width: 100%; height: 100%; object-fit: cover; }
-        .btn-hangup { width: 60px; height: 60px; border-radius: 50%; font-size: 1.5rem; background: var(--danger); color: white; border: none; cursor: pointer; }
-
-        /* RESPONSIVE DESIGN */
-        @media (max-width: 768px) {
-            .sidebar { width: 100%; }
-            .chat-area { display: none; width: 100%; }
-            body.chat-open .sidebar { display: none; }
-            body.chat-open .chat-area { display: flex; }
-            body.chat-open .btn-back { display: block; }
-            .chat-bubble { max-width: 85%; }
-            .chat-input-bar { padding: 12px; gap: 8px; }
-            .chat-input-bar input { padding: 12px 16px; font-size: 0.95rem; }
-            .chat-input-bar button { padding: 12px 20px; font-size: 0.95rem; }
-        }
+        /* Voeg deze CSS toe voor video-berichten in de chat */
+        .video-embed { width: 100%; max-width: 300px; border-radius: 10px; margin-top: 5px; }
+        .chat-bubble { padding: 12px; border-radius: 12px; margin: 5px; background: #1a2d4c; }
     </style>
 </head>
 <body>
 
-    <div id="loginOverlay" class="login-overlay">
-        <div class="login-card">
-            <h2 style="color:#fff; margin:0 0 5px 0;">Dolphin0x Netwerk</h2>
-            <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom: 20px;">Log in via e-mail, telefoon of social media en kies een avatar.</p>
-            
-            <input type="email" id="authEmail" class="auth-input" placeholder="E-mailadres (voor wachtwoord login)">
-            <input type="password" id="authPassword" class="auth-input" placeholder="Wachtwoord (voor wachtwoord login)">
-            <input type="tel" id="authPhone" class="auth-input" placeholder="Telefoonnummer (bijv. +31612345678)">
-            
-            <div class="avatar-picker-label">Kies jouw Avatar:</div>
-            <div class="avatar-grid">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Felix" class="avatar-option selected" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Felix')">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Aneka" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Aneka')">
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed=Jack" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/bottts/svg?seed=Jack')">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Leo" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo')">
-                <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=Mia" class="avatar-option" onclick="selectAvatar(this, 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mia')">
-            </div>
-            <input type="text" id="customAvatarUrl" class="auth-input" style="font-size: 0.8rem; padding: 8px;" placeholder="Of plak hier een eigen afbeelding-URL..." oninput="setCustomAvatar(this.value)">
-
-            <button class="login-btn btn-primary" onclick="loginEmail()">Inloggen / Registreren met E-mail</button>
-            <button class="login-btn btn-phone" onclick="loginWithPhone()">Inloggen met Telefoonnummer</button>
-            
-            <div style="margin: 12px 0; color: var(--text-muted); font-size: 0.8rem;">OF</div>
-            
-            <button class="login-btn btn-google" onclick="loginWithGoogle()">🌐 Inloggen met Google</button>
-            <button class="login-btn btn-apple" onclick="loginWithApple()">🍏 Inloggen met Apple</button>
-            
-            <div id="recaptcha-container" style="margin-top:10px;"></div>
-        </div>
-    </div>
-
-    <div class="sidebar">
-        <div class="profile-bar">
-            <div class="user-info">
-                <img id="myAvatar" src="https://www.w3schools.com/howto/img_avatar.png" class="avatar-sm">
-                <div>
-                    <div id="myName" class="username">Laden...</div>
-                    <span style="font-size: 0.75rem; color: var(--danger); cursor: pointer;" onclick="logout()">Uitloggen</span>
-                </div>
-            </div>
-        </div>
-
-        <div class="nav-tabs">
-            <div id="tabGroup" class="nav-tab active" onclick="switchTab('group')">Groepen</div>
-            <div id="tabPrivate" class="nav-tab" onclick="switchTab('private')">Privé</div>
-        </div>
-
-        <div id="createGroupBox" class="create-group-box">
-            <input type="text" id="newGroupNameInput" class="group-input" placeholder="Nieuwe groepsnaam..." onkeydown="if(event.key==='Enter') createGroupChannel()">
-            <button class="btn-create-group" onclick="createGroupChannel()">+ Maken</button>
-        </div>
-
-        <div id="listContainer" class="list-container"></div>
-    </div>
-
-    <div class="chat-area">
-        <div id="chatHeader" class="chat-header" style="display:none;">
-            <button class="btn-back" onclick="closeChatOnMobile()">← Terug</button>
-            <img id="chatTargetAvatar" src="" class="avatar-sm" style="width:32px; height:32px;">
-            <span id="chatTargetName">Selecteer een chat</span>
-        </div>
-        
-        <div id="chatMessages" class="chat-messages">
-            <div style="text-align:center; color:var(--text-muted); margin-top: 50px;">Welkom! Selecteer links een groep of persoon om te beginnen.</div>
-        </div>
-        
-        <div class="chat-input-bar" id="chatInputBar" style="display:none;">
-            <input type="text" id="chatMessageInput" placeholder="Typ een bericht..." onkeydown="if(event.key==='Enter') sendMessage()">
-            <button onclick="sendMessage()">Verstuur</button>
-        </div>
-    </div>
-
-    <div id="callOverlay" class="call-overlay">
-        <h2 id="callStatusText">Verbinden...</h2>
-        <div class="video-grid">
-            <div class="video-box"><video id="localVideo" autoplay playsinline muted></video></div>
-            <div class="video-box"><video id="remoteVideo" autoplay playsinline></video></div>
-        </div>
-        <button class="btn-hangup" onclick="hangUpCall()">✕</button>
-    </div>
-
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider, OAuthProvider, signOut, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, doc, setDoc, query, orderBy, onSnapshot, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
             authDomain: "dolphin0x.firebaseapp.com",
-            databaseURL: "https://dolphin0x-default-rtdb.firebaseio.com",
             projectId: "dolphin0x",
             storageBucket: "dolphin0x.firebasestorage.app",
             messagingSenderId: "397971950369",
@@ -199,315 +26,49 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
         const db = getFirestore(app);
+        const auth = getAuth(app);
 
-        let currentUser = null;
-        let activeTab = 'group'; 
-        let activeChatId = null; 
-        let usersCache = {};
-        let channelsList = [];
-        let unsubscribeChat = null;
-        let selectedAvatarUrl = "https://api.dicebear.com/7.x/bottts/svg?seed=Felix";
-
-        // WebRTC Config
-        let localStream, remoteStream, peerConnection, activeCallId;
-        const servers = { iceServers: [{ urls: ['ice1.l.google.com:19002'] }] };
-
-        // 1. AVATAR SELECTIE LOGICA
-        window.selectAvatar = function(element, url) {
-            document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selected'));
-            element.classList.add('selected');
-            selectedAvatarUrl = url;
-            document.getElementById('customAvatarUrl').value = ""; // Reset custom input
+        // --- 1. CHAT & VIDEO POSTEN ---
+        window.sendMessage = async function(text, isVideo = false) {
+            const chatCollection = collection(db, "global_chat");
+            await addDoc(chatCollection, {
+                text: text,
+                isVideo: isVideo, // True als het een video link is
+                senderId: auth.currentUser.uid,
+                timestamp: serverTimestamp()
+            });
         };
 
-        window.setCustomAvatar = function(url) {
-            if(url.trim() !== "") {
-                document.querySelectorAll('.avatar-option').forEach(img => img.classList.remove('selected'));
-                selectedAvatarUrl = url.trim();
-            }
+        // --- 2. VIDEO POST FUNCTIE ---
+        window.postVideo = function() {
+            const url = prompt("Plak hier de YouTube of MP4 video link:");
+            if (url) window.sendMessage(url, true);
         };
 
-        // 2. AUTHENTICATIE METHODES
-        window.loginEmail = async function() {
-            const e = document.getElementById('authEmail').value;
-            const p = document.getElementById('authPassword').value;
-            try { await signInWithEmailAndPassword(auth, e, p); } 
-            catch { try { await createUserWithEmailAndPassword(auth, e, p); } catch(err) { alert(err.message); } }
-        };
-
-        window.loginWithPhone = async function() {
-            const phoneNumber = document.getElementById('authPhone').value.trim();
-            if(!phoneNumber) return alert("Vul eerst een geldig telefoonnummer in!");
-            
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-            try {
-                const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-                const code = prompt("Voer de verificatiecode in die per SMS is verstuurd:");
-                if(code) await confirmationResult.confirm(code);
-            } catch (err) { alert("Telefoon inlog mislukt: " + err.message); }
-        };
-
-        window.loginWithGoogle = () => signInWithPopup(auth, new GoogleAuthProvider());
-        window.loginWithApple = () => signInWithPopup(auth, new OAuthProvider('apple.com'));
-        window.logout = () => signOut(auth).then(() => location.reload());
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                currentUser = user;
-                document.getElementById("loginOverlay").style.display = "none";
-                
-                const userRef = doc(db, "users", user.uid);
-                const userSnap = await getDoc(userRef);
-                
-                // Sla de geselecteerde avatar op als de gebruiker nieuw is, of behoud de bestaande
-                if (!userSnap.exists()) {
-                    let finalAvatar = selectedAvatarUrl || user.photoURL || "https://www.w3schools.com/howto/img_avatar.png";
-                    await setDoc(userRef, { 
-                        uid: user.uid, 
-                        username: user.displayName || user.phoneNumber || user.email.split('@')[0], 
-                        avatarUrl: finalAvatar 
-                    });
+        // --- 3. RENDERING LOGICA ---
+        // Pas je onSnapshot aan om video's anders te tonen:
+        function renderMessages(messages) {
+            const container = document.getElementById("chatMessages");
+            messages.forEach(m => {
+                if (m.isVideo) {
+                    container.innerHTML += `<div class="chat-bubble">
+                        <video class="video-embed" controls src="${m.text}"></video>
+                    </div>`;
+                } else {
+                    container.innerHTML += `<div class="chat-bubble">${m.text}</div>`;
                 }
-
-                onSnapshot(collection(db, "channels"), (snapshot) => {
-                    channelsList = [];
-                    snapshot.forEach(d => channelsList.push({ id: d.id, ...d.data() }));
-                    renderSidebar();
-                });
-
-                onSnapshot(collection(db, "users"), (snapshot) => {
-                    usersCache = {};
-                    snapshot.forEach(d => usersCache[d.id] = d.data());
-                    
-                    document.getElementById("myName").innerText = usersCache[user.uid]?.username || "Gebruiker";
-                    document.getElementById("myAvatar").src = usersCache[user.uid]?.avatarUrl || selectedAvatarUrl;
-                    renderSidebar();
-                });
-                listenForCalls();
-                openChat('global'); 
-            } else {
-                document.getElementById("loginOverlay").style.display = "flex";
-            }
-        });
-
-        // 3. NAVIGATIE & SIDEBAR
-        window.switchTab = function(tab) {
-            activeTab = tab;
-            document.getElementById("tabGroup").classList.toggle("active", tab === 'group');
-            document.getElementById("tabPrivate").classList.toggle("active", tab === 'private');
-            document.getElementById("createGroupBox").style.display = tab === 'group' ? 'flex' : 'none';
-            renderSidebar();
-            
-            if(tab === 'group') openChat('global');
-            else {
-                const alternativeUser = Object.keys(usersCache).find(id => id !== currentUser.uid);
-                if(alternativeUser) openChat(alternativeUser);
-            }
-        };
-
-        window.createGroupChannel = async function() {
-            const input = document.getElementById("newGroupNameInput");
-            const name = input.value.trim();
-            if(!name) return;
-
-            try {
-                await addDoc(collection(db, "channels"), { name: name, createdAt: new Date(), creator: currentUser.uid });
-                input.value = "";
-            } catch(err) { alert("Fout bij maken groep: " + err.message); }
-        };
-
-        function renderSidebar() {
-            const container = document.getElementById("listContainer");
-            container.innerHTML = "";
-
-            if (activeTab === 'group') {
-                container.innerHTML += `
-                    <div class="user-item ${activeChatId === 'global' ? 'active' : ''}" onclick="openChat('global')">
-                        <div class="user-info">
-                            <div style="font-size:22px;">🌍</div>
-                            <span style="font-weight:bold;">Algemene Chat</span>
-                        </div>
-                    </div>
-                `;
-                channelsList.forEach(channel => {
-                    container.innerHTML += `
-                        <div class="user-item ${activeChatId === channel.id ? 'active' : ''}" onclick="openChat('${channel.id}')">
-                            <div class="user-info">
-                                <div style="font-size:22px;">💬</div>
-                                <span>${escapeHTML(channel.name)}</span>
-                            </div>
-                        </div>
-                    `;
-                });
-            } else {
-                Object.keys(usersCache).filter(id => id !== currentUser.uid).forEach(uid => {
-                    const u = usersCache[uid];
-                    container.innerHTML += `
-                        <div class="user-item ${activeChatId === uid ? 'active' : ''}" onclick="openChat('${uid}')">
-                            <div class="user-info">
-                                <img src="${u.avatarUrl}" class="avatar-sm" style="width:32px; height:32px;">
-                                <span>${u.username}</span>
-                            </div>
-                            <button class="btn-call" onclick="event.stopPropagation(); startCall('${uid}')">📞</button>
-                        </div>
-                    `;
-                });
-            }
-        }
-
-        // 4. CHAT LOGICA
-        window.openChat = function(id) {
-            activeChatId = id;
-            document.getElementById("chatHeader").style.display = "flex";
-            document.getElementById("chatInputBar").style.display = "flex";
-            document.body.classList.add("chat-open");
-
-            if (id === 'global') {
-                document.getElementById("chatTargetName").innerText = "Algemene Groepschat";
-                document.getElementById("chatTargetAvatar").src = "https://cdn-icons-png.flaticon.com/512/615/615075.png";
-            } else if (usersCache[id]) {
-                document.getElementById("chatTargetName").innerText = usersCache[id].username;
-                document.getElementById("chatTargetAvatar").src = usersCache[id].avatarUrl;
-            } else {
-                const channel = channelsList.find(c => c.id === id);
-                document.getElementById("chatTargetName").innerText = channel ? channel.name : "Groep";
-                document.getElementById("chatTargetAvatar").src = "https://cdn-icons-png.flaticon.com/512/615/615075.png";
-            }
-
-            renderSidebar();
-            if(unsubscribeChat) unsubscribeChat();
-
-            let dbQuery;
-            if (id === 'global') {
-                dbQuery = query(collection(db, "global_chat"), orderBy("timestamp", "asc"));
-            } else if (usersCache[id]) {
-                dbQuery = query(collection(db, "direct_chats", currentUser.uid < id ? `${currentUser.uid}_${id}` : `${id}_${currentUser.uid}`, "messages"), orderBy("timestamp", "asc"));
-            } else {
-                dbQuery = query(collection(db, "channels", id, "messages"), orderBy("timestamp", "asc"));
-            }
-
-            unsubscribeChat = onSnapshot(dbQuery, (snapshot) => {
-                const box = document.getElementById("chatMessages");
-                box.innerHTML = "";
-                snapshot.forEach(d => {
-                    const m = d.data();
-                    const isMe = m.senderId === currentUser.uid;
-                    const authorName = (id === 'global' || !usersCache[id]) && !isMe ? `<div class="chat-author">${usersCache[m.senderId]?.username || 'Gebruiker'}</div>` : '';
-                    box.innerHTML += `
-                        <div style="display:flex; flex-direction:column; align-items: ${isMe ? 'flex-end' : 'flex-start'}; width:100%;">
-                            ${authorName}
-                            <div class="chat-bubble ${isMe ? 'me' : 'them'}">${escapeHTML(m.text)}</div>
-                        </div>`;
-                });
-                box.scrollTop = box.scrollHeight;
             });
         }
 
-        window.closeChatOnMobile = function() {
-            document.body.classList.remove("chat-open");
+        // --- 4. BELLEN (WEBRTC) ---
+        window.startCall = async function() {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            document.getElementById("localVideo").srcObject = stream;
+            // PeerConnection logica initialiseren...
+            alert("Verbinding maken met andere gebruiker...");
         };
 
-        window.sendMessage = async function() {
-            const input = document.getElementById("chatMessageInput");
-            const text = input.value.trim();
-            if(!text || !activeChatId) return;
-
-            const payload = { senderId: currentUser.uid, text: text, timestamp: new Date() };
-
-            if (activeChatId === 'global') {
-                await addDoc(collection(db, "global_chat"), payload);
-            } else if (usersCache[activeChatId]) {
-                const chatId = currentUser.uid < activeChatId ? `${currentUser.uid}_${activeChatId}` : `${activeChatId}_${currentUser.uid}`;
-                await addDoc(collection(db, "direct_chats", chatId, "messages"), payload);
-            } else {
-                await addDoc(collection(db, "channels", activeChatId, "messages"), payload);
-            }
-            input.value = "";
-        };
-
-        // 5. WEBRTC BELLEN
-        window.startCall = async function(targetUid) {
-            document.getElementById("callOverlay").style.display = "flex";
-            document.getElementById("callStatusText").innerText = "Bellen...";
-            
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            remoteStream = new MediaStream();
-            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.ontrack = e => e.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
-            
-            document.getElementById("localVideo").srcObject = localStream;
-            document.getElementById("remoteVideo").srcObject = remoteStream;
-
-            const callDoc = doc(collection(db, "calls"));
-            activeCallId = callDoc.id;
-            peerConnection.onicecandidate = e => { if (e.candidate) addDoc(collection(callDoc, "callerCandidates"), e.candidate.toJSON()); };
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            await setDoc(callDoc, { offer: { type: offer.type, sdp: offer.sdp }, caller: currentUser.uid, receiver: targetUid, status: "ringing" });
-
-            onSnapshot(callDoc, async (snap) => {
-                if (snap.data()?.answer && !peerConnection.currentRemoteDescription) await peerConnection.setRemoteDescription(new RTCSessionDescription(snap.data().answer));
-                if (snap.data()?.status === "ended") closeCallUI();
-            });
-            onSnapshot(collection(callDoc, "receiverCandidates"), snap => {
-                snap.docChanges().forEach(c => { if (c.type === 'added') peerConnection.addIceCandidate(new RTCIceCandidate(c.doc.data())); });
-            });
-        };
-
-        function listenForCalls() {
-            peerConnection = new RTCPeerConnection(servers);
-            onSnapshot(collection(db, "calls"), snap => {
-                snap.docChanges().forEach(async c => {
-                    const data = c.doc.data();
-                    if ((c.type === 'added' || c.type === 'modified') && data.receiver === currentUser.uid && data.status === "ringing") {
-                        activeCallId = c.doc.id;
-                        if(confirm(`Inkomende oproep van ${usersCache[data.caller]?.username || 'iemand'}! Opnemen?`)) acceptCall(c.doc.ref, data);
-                        else await updateDoc(c.doc.ref, { status: "ended" });
-                    }
-                });
-            });
-        }
-
-        async function acceptCall(callDoc, data) {
-            document.getElementById("callOverlay").style.display = "flex";
-            document.getElementById("callStatusText").innerText = "Verbonden";
-            
-            localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            remoteStream = new MediaStream();
-            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.ontrack = e => e.streams[0].getTracks().forEach(t => remoteStream.addTrack(t));
-            
-            document.getElementById("localVideo").srcObject = localStream;
-            document.getElementById("remoteVideo").srcObject = remoteStream;
-
-            peerConnection.onicecandidate = e => { if (e.candidate) addDoc(collection(callDoc, "receiverCandidates"), e.candidate.toJSON()); };
-            await peerConnection.setRemoteDescription(new RTCSessionDescription(data.offer));
-            const answer = await peerConnection.createAnswer();
-            await peerConnection.setLocalDescription(answer);
-            await updateDoc(callDoc, { answer: { type: answer.type, sdp: answer.sdp }, status: "active" });
-
-            onSnapshot(collection(callDoc, "callerCandidates"), snap => {
-                snap.docChanges().forEach(c => { if (c.type === 'added') peerConnection.addIceCandidate(new RTCIceCandidate(c.doc.data())); });
-            });
-            onSnapshot(callDoc, snap => { if (snap.data()?.status === "ended") closeCallUI(); });
-        }
-
-        window.hangUpCall = async function() {
-            if(activeCallId) await updateDoc(doc(db, "calls", activeCallId), { status: "ended" });
-            closeCallUI();
-        };
-
-        function closeCallUI() {
-            document.getElementById("callOverlay").style.display = "none";
-            if (localStream) localStream.getTracks().forEach(t => t.stop());
-            if (peerConnection) peerConnection.close();
-            peerConnection = new RTCPeerConnection(servers);
-        }
-
-        function escapeHTML(str) { return str ? str.replace(/[&<>'"]/g, t => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[t] || t)) : ''; }
     </script>
 </body>
 </html>
