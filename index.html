@@ -2,21 +2,67 @@
 <html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <title>Dolphin0x - Full Suite</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dolphin0x - Dashboard</title>
     <style>
-        /* Voeg deze CSS toe voor video-berichten in de chat */
-        .video-embed { width: 100%; max-width: 300px; border-radius: 10px; margin-top: 5px; }
-        .chat-bubble { padding: 12px; border-radius: 12px; margin: 5px; background: #1a2d4c; }
+        :root { --bg: #090e16; --panel: #141c29; --blue: #3b82f6; --text: #e2e8f0; }
+        body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; }
+        
+        /* Login & UI */
+        .auth-container { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); z-index: 5000; }
+        .auth-card { background: var(--panel); padding: 3rem; border-radius: 24px; width: 350px; text-align: center; border: 1px solid #1e293b; }
+        .input { width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #334155; background: #0f172a; color: white; }
+        .btn { width: 100%; padding: 12px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; margin-bottom: 8px; }
+        .btn-blue { background: var(--blue); color: white; }
+        
+        /* Chat & Video */
+        .chat-box { height: 70vh; overflow-y: auto; padding: 20px; border: 1px solid #1e293b; }
+        .msg { padding: 10px; margin-bottom: 8px; background: #1e293b; border-radius: 10px; }
+        .video-msg { width: 100%; max-width: 300px; border-radius: 10px; margin-top: 5px; }
+        
+        /* Call Overlay */
+        .call-ui { display: none; position: fixed; inset: 0; background: #000; z-index: 4000; align-items: center; justify-content: center; flex-direction: column; }
+        .vid-grid { display: flex; gap: 20px; width: 80%; height: 50%; }
+        .vid { flex: 1; background: #222; border-radius: 16px; overflow: hidden; }
+        video { width: 100%; height: 100%; object-fit: cover; }
     </style>
 </head>
 <body>
 
+    <div id="loginOverlay" class="auth-container">
+        <div class="auth-card">
+            <h2>Dolphin0x</h2>
+            <input type="email" id="email" class="input" placeholder="E-mail">
+            <input type="password" id="pass" class="input" placeholder="Wachtwoord">
+            <button class="btn btn-blue" onclick="handleLogin()">Inloggen</button>
+            <button class="btn" style="background:white; color:black;" onclick="handleGoogle()">Google</button>
+        </div>
+    </div>
+
+    <div style="padding: 20px;">
+        <div id="chatMessages" class="chat-box"></div>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="chatIn" class="input" placeholder="Bericht...">
+            <button class="btn btn-blue" style="width:100px;" onclick="sendMsg()">Stuur</button>
+            <button class="btn" style="width:100px;" onclick="postVideo()">🎥 Video</button>
+            <button class="btn" style="width:100px; background:green;" onclick="startCall()">📞 Bel</button>
+        </div>
+    </div>
+
+    <div id="callOverlay" class="call-ui">
+        <div class="vid-grid">
+            <div class="vid"><video id="local" autoplay playsinline muted></video></div>
+            <div class="vid"><video id="remote" autoplay playsinline></video></div>
+        </div>
+        <button class="btn" style="width:120px; background:red; margin-top:20px;" onclick="hangup()">Stop</button>
+    </div>
+
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        const firebaseConfig = {
+        const config = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
             authDomain: "dolphin0x.firebaseapp.com",
             projectId: "dolphin0x",
@@ -24,51 +70,48 @@
             messagingSenderId: "397971950369",
             appId: "1:397971950369:web:06c65ad929479656a10c60"
         };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+        const app = initializeApp(config);
         const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        // --- 1. CHAT & VIDEO POSTEN ---
-        window.sendMessage = async function(text, isVideo = false) {
-            const chatCollection = collection(db, "global_chat");
-            await addDoc(chatCollection, {
-                text: text,
-                isVideo: isVideo, // True als het een video link is
-                senderId: auth.currentUser.uid,
-                timestamp: serverTimestamp()
-            });
+        // --- Auth ---
+        window.handleLogin = () => signInWithEmailAndPassword(auth, document.getElementById('email').value, document.getElementById('pass').value)
+            .then(() => document.getElementById('loginOverlay').style.display = 'none');
+        window.handleGoogle = () => signInWithPopup(auth, new GoogleAuthProvider())
+            .then(() => document.getElementById('loginOverlay').style.display = 'none');
+
+        // --- Chat & Video Post ---
+        window.sendMsg = async (text = document.getElementById('chatIn').value, isVid = false) => {
+            if(!text) return;
+            await addDoc(collection(db, "global_chat"), { text, isVid, sender: auth.currentUser.uid, time: serverTimestamp() });
+            document.getElementById('chatIn').value = '';
+        };
+        window.postVideo = () => {
+            const url = prompt("Plak videolink:");
+            if(url) sendMsg(url, true);
         };
 
-        // --- 2. VIDEO POST FUNCTIE ---
-        window.postVideo = function() {
-            const url = prompt("Plak hier de YouTube of MP4 video link:");
-            if (url) window.sendMessage(url, true);
-        };
-
-        // --- 3. RENDERING LOGICA ---
-        // Pas je onSnapshot aan om video's anders te tonen:
-        function renderMessages(messages) {
-            const container = document.getElementById("chatMessages");
-            messages.forEach(m => {
-                if (m.isVideo) {
-                    container.innerHTML += `<div class="chat-bubble">
-                        <video class="video-embed" controls src="${m.text}"></video>
-                    </div>`;
-                } else {
-                    container.innerHTML += `<div class="chat-bubble">${m.text}</div>`;
-                }
+        // Realtime updates
+        onSnapshot(query(collection(db, "global_chat"), orderBy("time")), snap => {
+            const box = document.getElementById('chatMessages');
+            box.innerHTML = '';
+            snap.forEach(d => {
+                const m = d.data();
+                box.innerHTML += m.isVid ? `<div class="msg"><video class="video-msg" controls src="${m.text}"></video></div>` : `<div class="msg">${m.text}</div>`;
             });
-        }
+        });
 
-        // --- 4. BELLEN (WEBRTC) ---
-        window.startCall = async function() {
+        // --- WebRTC Bellen ---
+        window.startCall = async () => {
+            document.getElementById('callOverlay').style.display = 'flex';
             const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-            document.getElementById("localVideo").srcObject = stream;
-            // PeerConnection logica initialiseren...
-            alert("Verbinding maken met andere gebruiker...");
+            document.getElementById('local').srcObject = stream;
+            // PeerConnection logica moet hier gekoppeld worden aan Firebase signaling
         };
-
+        window.hangup = () => {
+            document.getElementById('callOverlay').style.display = 'none';
+            document.getElementById('local').srcObject.getTracks().forEach(t => t.stop());
+        };
     </script>
 </body>
 </html>
