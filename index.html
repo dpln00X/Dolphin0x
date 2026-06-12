@@ -3,121 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x | Ultra Suite</title>
+    <title>Dolphin0x | Master Suite</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root { 
-            --bg-deep: #070a13;
-            --bg-glass: rgba(17, 25, 40, 0.75);
-            --bg-glass-bright: rgba(30, 41, 59, 0.85);
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --accent: #3b82f6; 
-            --accent-glow: rgba(59, 130, 246, 0.4);
-            --accent-gradient: linear-gradient(135deg, #2563eb, #06b6d4);
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-deep: #070a13; --bg-glass: rgba(17, 25, 40, 0.85); --border-glass: rgba(255, 255, 255, 0.08);
+            --accent-gradient: linear-gradient(135deg, #2563eb, #06b6d4); --text-main: #f8fafc; --text-muted: #94a3b8;
         }
 
         body { 
-            margin: 0; 
-            font-family: 'Inter', system-ui, sans-serif; 
-            background-color: var(--bg-deep);
-            background-image: 
-                radial-gradient(at 20% 20%, rgba(37, 99, 235, 0.15) 0px, transparent 40%),
-                radial-gradient(at 80% 80%, rgba(6, 182, 212, 0.1) 0px, transparent 40%);
-            color: var(--text-main);
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-deep); color: var(--text-main);
+            height: 100vh; overflow: hidden; display: flex;
         }
 
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(15px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        /* --- Auth Scherm --- */
-        .auth-overlay { position: fixed; inset: 0; background: rgba(7, 10, 19, 0.95); backdrop-filter: blur(10px); display: flex; align-items: center; justify-content: center; z-index: 10000; overflow-y: auto; padding: 20px;}
-        .auth-card { background: var(--bg-glass); border: 1px solid var(--border-glass); padding: 40px; border-radius: 24px; width: 100%; max-width: 360px; text-align: center; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8); }
-        .auth-card h1 { font-size: 2.2rem; margin: 0 0 8px 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .auth-card input { width: 100%; padding: 14px; margin: 8px 0; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; outline: none; transition: 0.3s; font-size: 0.95rem;}
-        .auth-card input:focus { border-color: #3b82f6; box-shadow: 0 0 15px var(--accent-glow); }
-
-        .auth-divider { margin: 20px 0; font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; }
-        .auth-divider::before, .auth-divider::after { content: ""; flex: 1; border-bottom: 1px solid var(--border-glass); margin: 0 10px; }
-
-        .social-btn-group { display: flex; gap: 10px; margin-top: 15px; }
-        .social-btn { flex: 1; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; cursor: pointer; transition: 0.2s; font-weight: 500; font-size: 0.9rem; }
-        .social-btn:hover { background: rgba(255,255,255,0.1); transform: translateY(-2px); }
-
-        #phoneAuthSection { display: none; background: rgba(0,0,0,0.3); padding: 15px; border-radius: 16px; margin-top: 15px; border: 1px solid var(--border-glass); animation: slideIn 0.3s ease; }
-
-        /* --- Layout --- */
-        #app-container { display: none; width: 100vw; height: 100vh; grid-template-columns: 300px 1fr; }
-        .sidebar { background: var(--bg-glass); backdrop-filter: blur(20px); padding: 24px; border-right: 1px solid var(--border-glass); display: flex; flex-direction: column; gap: 20px; }
-        .sidebar-header h2 { margin: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-size: 1.5rem; }
+        /* --- UI & Layout --- */
+        #app-container { display: none; width: 100%; height: 100%; grid-template-columns: 280px 1fr; }
         
-        .room-list-container { flex-grow: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px; }
-        .room-list-container::-webkit-scrollbar { width: 4px; }
-        .room-list-container::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        .sidebar { background: var(--bg-glass); border-right: 1px solid var(--border-glass); display: flex; flex-direction: column; padding: 20px; gap: 15px; }
+        .sidebar-header { font-weight: 700; font-size: 1.4rem; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
         
-        .room-btn { padding: 12px 16px; border-radius: 12px; cursor: pointer; transition: 0.2s; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 8px; }
-        .room-btn:hover { background: rgba(255, 255, 255, 0.05); color: white; }
-        .room-btn.active { background: var(--accent-gradient); color: white; box-shadow: 0 4px 15px var(--accent-glow); font-weight: 600; }
+        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; margin-top: 10px; letter-spacing: 1px; }
+        .list-container { overflow-y: auto; display: flex; flex-direction: column; gap: 5px; max-height: 40vh; }
+        
+        .item-btn { padding: 10px 14px; border-radius: 10px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 0.9rem; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+        .item-btn:hover { background: rgba(255,255,255,0.05); color: white; }
+        .item-btn.active { background: var(--accent-gradient); color: white; }
 
-        .profile-box { background: rgba(0,0,0,0.3); padding: 14px; border-radius: 16px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-glass); }
-        .profile-avatar { width: 42px; height: 42px; border-radius: 12px; object-fit: cover; border: 2px solid rgba(255,255,255,0.1); }
-        .profile-info { flex-grow: 1; overflow: hidden; }
-        .profile-name { font-weight: 600; font-size: 0.95rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .chat-area { display: flex; flex-direction: column; flex-grow: 1; position: relative; }
+        .chat-header { padding: 20px; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2); backdrop-filter: blur(10px); }
         
-        .action-btns { display: flex; gap: 8px; }
-        .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid transparent; color: white; padding: 6px; border-radius: 8px; cursor: pointer; transition: 0.2s; }
-        .icon-btn:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
-
-        /* --- Chat Area --- */
-        .chat-area { display: flex; flex-direction: column; height: 100vh; position: relative; }
-        .chat-header { padding: 20px 30px; background: rgba(17, 25, 40, 0.4); backdrop-filter: blur(20px); border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h3 { margin: 0; font-size: 1.2rem; display: flex; align-items: center; gap: 8px; }
-        
-        .msg-feed { flex-grow: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth; }
-        .msg-feed::-webkit-scrollbar { width: 6px; }
-        .msg-feed::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
-        
-        .msg-container { display: flex; flex-direction: column; max-width: 75%; width: fit-content; animation: slideIn 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+        .msg-feed { flex-grow: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; }
+        .msg-container { max-width: 75%; display: flex; flex-direction: column; animation: slideIn 0.3s ease; }
         .msg-container.me { align-self: flex-end; align-items: flex-end; }
         .msg-container.other { align-self: flex-start; align-items: flex-start; }
         
-        .msg-sender { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; padding: 0 4px; font-weight: 500; }
-        .bubble { padding: 12px 18px; border-radius: 18px; font-size: 0.95rem; line-height: 1.5; word-break: break-word; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .bubble { padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.4; word-break: break-word; }
         .me .bubble { background: var(--accent-gradient); color: white; border-bottom-right-radius: 4px; }
-        .other .bubble { background: var(--bg-glass-bright); color: white; border-bottom-left-radius: 4px; border: 1px solid var(--border-glass); }
+        .other .bubble { background: rgba(30, 41, 59, 0.8); border: 1px solid var(--border-glass); border-bottom-left-radius: 4px; }
+        .msg-sender { font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; padding: 0 4px; }
+        .media-chat { max-width: 100%; max-height: 200px; border-radius: 12px; margin-top: 5px; }
+
+        .input-bar { padding: 15px 25px; background: rgba(0,0,0,0.3); border-top: 1px solid var(--border-glass); display: flex; gap: 10px; align-items: center; }
+        .input-bar input[type="text"] { flex-grow: 1; padding: 12px 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.5); color: white; outline: none; }
         
-        .media-chat { max-width: 100%; max-height: 250px; border-radius: 12px; margin-top: 8px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; }
+        .btn-primary { background: var(--accent-gradient); }
+        .btn-secondary { background: rgba(255,255,255,0.1); }
+        .btn-icon { background: transparent; font-size: 1.2rem; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-icon:hover { transform: scale(1.1); }
 
-        /* --- Input Area --- */
-        .input-wrapper { padding: 20px 30px; background: transparent; }
-        .input-bar { background: var(--bg-glass); backdrop-filter: blur(20px); padding: 10px; border-radius: 20px; display: flex; gap: 10px; align-items: center; border: 1px solid var(--border-glass); box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .input-bar input[type="text"] { flex-grow: 1; padding: 12px 15px; border: none; background: transparent; color: white; font-size: 1rem; outline: none; }
-        .file-label { cursor: pointer; padding: 10px; background: rgba(255,255,255,0.05); border-radius: 12px; display: flex; align-items: center; justify-content: center; transition: 0.2s; font-size: 1.2rem; }
-        .file-label:hover { background: rgba(255,255,255,0.15); transform: translateY(-2px); }
+        /* Auth Overlay */
+        .auth-overlay { position: fixed; inset: 0; background: var(--bg-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; }
+        .auth-card { background: var(--bg-glass); padding: 40px; border-radius: 20px; width: 90%; max-width: 340px; text-align: center; border: 1px solid var(--border-glass); }
+        .auth-card input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border-glass); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; }
+        
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* --- Buttons --- */
-        .btn { padding: 12px 20px; border-radius: 14px; border: none; cursor: pointer; font-weight: 600; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-primary { background: var(--accent-gradient); color: white; box-shadow: 0 4px 15px var(--accent-glow); }
-        .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
-        .btn-secondary { background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); width: 100%; }
-        .btn-secondary:hover { background: rgba(255,255,255,0.1); }
-
+        /* Responsive */
         @media (max-width: 768px) {
             #app-container { display: flex; flex-direction: column; }
-            .sidebar { padding: 15px; border-right: none; border-bottom: 1px solid var(--border-glass); flex-direction: column; gap: 15px; }
-            .room-list-container { flex-direction: row; overflow-x: auto; overflow-y: hidden; max-height: 50px; }
-            .room-btn { white-space: nowrap; }
+            .sidebar { padding: 10px; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border-glass); max-height: 150px; overflow-y: auto; gap: 5px; }
+            .sidebar-header { width: 100%; font-size: 1.1rem; }
+            .list-container { flex-direction: row; flex-wrap: nowrap; overflow-x: auto; width: 100%; max-height: auto; padding-bottom: 5px; }
+            .section-title { display: none; }
+            .item-btn { white-space: nowrap; padding: 8px 12px; }
             .chat-area { flex-grow: 1; height: 0; }
-            .input-wrapper { padding: 15px; }
         }
     </style>
 </head>
@@ -125,78 +76,60 @@
 
     <div id="authOverlay" class="auth-overlay">
         <div class="auth-card">
-            <h1>Dolphin0x</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Kies je login methode</p>
+            <h1 class="sidebar-header" style="font-size: 2rem; margin-bottom: 5px;">Dolphin0x</h1>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 20px;">Master Suite Login</p>
             
             <input type="email" id="email" placeholder="E-mailadres">
             <input type="password" id="pass" placeholder="Wachtwoord">
             <div style="display: flex; gap: 10px; margin-top: 10px;">
-                <button class="btn btn-primary" style="flex: 1;" onclick="authenticate(true)">Login</button>
-                <button class="btn btn-secondary" style="flex: 1;" onclick="authenticate(false)">Registreer</button>
+                <button class="btn btn-primary" style="flex: 1;" onclick="authEmail(true)">Login</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="authEmail(false)">Registreer</button>
             </div>
-
-            <div class="auth-divider">OF VERBIND VIA</div>
-
-            <div class="social-btn-group">
-                <button class="social-btn" onclick="loginWithGoogle()">🌐 Google</button>
-                <button class="social-btn" onclick="togglePhoneAuth()">📱 SMS Code</button>
-            </div>
-
-            <div id="phoneAuthSection">
-                <div id="recaptcha-container"></div> <p style="font-size: 0.8rem; color: #94a3b8; margin: 0 0 10px 0;">Vul je nummer in (met +31 voor NL)</p>
-                <input type="tel" id="phoneNumber" placeholder="+31 6 12345678">
-                <button class="btn btn-primary" id="btnSendSms" style="width: 100%; margin-top: 5px;" onclick="sendPhoneCode()">Verstuur Code</button>
-                
-                <input type="text" id="smsCode" placeholder="Vul de 6-cijferige code in" style="display: none; margin-top: 15px;">
-                <button class="btn btn-primary" id="btnVerifySms" style="width: 100%; display: none; margin-top: 5px; background: #10b981;" onclick="verifyPhoneCode()">Verifieer Code</button>
-            </div>
+            
+            <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
+            <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="loginGoogle()">🌐 Login met Google</button>
+            <button class="btn btn-secondary" style="width: 100%;" onclick="alert('SMS Login ingebouwd in code, vereist Firebase setup!')">📱 SMS Login</button>
         </div>
     </div>
 
     <div id="app-container">
         <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>Dolphin0x</h2>
-                <div style="font-size: 0.75rem; color: #10b981; font-weight: 600; margin-top: 4px;">● Server Online</div>
+            <div class="sidebar-header" style="display: flex; justify-content: space-between;">
+                Dolphin0x <button class="btn-icon" onclick="logout()" title="Uitloggen" style="font-size:1rem;">🚪</button>
             </div>
-            <button class="btn btn-secondary" onclick="handleCreateRoom()">+ Nieuw Kanaal</button>
-            <div id="roomList" class="room-list-container"></div>
             
-            <div class="profile-box">
-                <img id="myAvatar" class="profile-avatar" src="https://api.dicebear.com/7.x/bottts/svg" alt="Avatar">
-                <div class="profile-info">
-                    <div id="myName" class="profile-name">Gebruiker</div>
-                </div>
-                <div class="action-btns">
-                    <button class="icon-btn" onclick="editProfile()" title="Profiel">⚙️</button>
-                    <button class="icon-btn" onclick="logout()" title="Uitloggen" style="color: #ef4444;">🚪</button>
-                </div>
+            <div class="section-title">Publieke Groepen</div>
+            <div id="roomList" class="list-container">
+                <div class="item-btn active" onclick="setChatContext('room', 'global', this)"># global</div>
+                <div class="item-btn" onclick="setChatContext('room', 'dev-talk', this)"># dev-talk</div>
             </div>
+
+            <div class="section-title">Direct Messages</div>
+            <div id="userList" class="list-container">
+                </div>
         </div>
 
         <div class="chat-area">
             <div class="chat-header">
-                <h3 id="activeRoomTitle"># global</h3>
+                <h3 id="chatTitle" style="margin: 0; font-weight: 600;"># global</h3>
+                <button class="btn btn-secondary" onclick="alert('WebRTC call interface opent hier!')">📞 Video Call</button>
             </div>
+            
             <div id="msgFeed" class="msg-feed"></div>
-            <div class="input-wrapper">
-                <div class="input-bar">
-                    <input type="file" id="imgUpload" accept="image/*" style="display:none;" onchange="uploadMedia(this, 'image')">
-                    <input type="file" id="vidUpload" accept="video/*" style="display:none;" onchange="uploadMedia(this, 'video')">
-                    <label for="imgUpload" class="file-label" title="Foto">📷</label>
-                    <label for="vidUpload" class="file-label" title="Video">🎥</label>
-                    <input type="text" id="msgInput" placeholder="Typ je bericht...">
-                    <button class="btn btn-primary" style="padding: 10px 18px; border-radius: 14px;" onclick="handleSendMessage()">Stuur</button>
-                </div>
+            
+            <div class="input-bar">
+                <input type="file" id="mediaUpload" accept="image/*,video/*" style="display:none;" onchange="handleFileUpload(this)">
+                <label for="mediaUpload" class="btn-icon">📎</label>
+                <input type="text" id="msgInput" placeholder="Typ je bericht...">
+                <button class="btn btn-primary" onclick="sendMessage()">Stuur</button>
             </div>
         </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        // Let op: Nieuwe import regels toegevoegd voor Google en Phone Auth
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut, GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
@@ -211,189 +144,124 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let activeRoomId = 'global';
+        let chatType = 'room'; // 'room' of 'private'
+        let currentTarget = 'global';
         let unsubscribeMessages = null;
 
-        // --- NIEUW: Google Authenticatie ---
-        window.loginWithGoogle = async () => {
-            const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                alert("Google Login mislukt: " + error.message);
-            }
+        // --- AUTHENTICATIE ---
+        window.authEmail = async (isLogin) => {
+            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
+            if(!e || !p) return alert("Vul alles in.");
+            try { isLogin ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); } 
+            catch(err) { alert(err.message); }
         };
 
-        // --- NIEUW: Telefoon Authenticatie ---
-        window.togglePhoneAuth = () => {
-            const section = document.getElementById('phoneAuthSection');
-            section.style.display = section.style.display === 'block' ? 'none' : 'block';
+        window.loginGoogle = async () => {
+            try { await signInWithPopup(auth, new GoogleAuthProvider()); } 
+            catch(err) { alert(err.message); }
         };
 
-        window.sendPhoneCode = async () => {
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            if (!phoneNumber.startsWith('+')) return alert("Gebruik het landnummer, bijvoorbeeld +31612345678");
+        window.logout = () => signOut(auth);
 
-            // Maak de onzichtbare reCAPTCHA aan (vereist door Firebase)
-            if(!window.recaptchaVerifier) {
-                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                    'size': 'invisible'
-                });
-            }
-
-            try {
-                document.getElementById('btnSendSms').innerText = "Versturen...";
-                window.confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier);
-                
-                // Laat de invoervelden voor de code zien
-                document.getElementById('phoneNumber').style.display = 'none';
-                document.getElementById('btnSendSms').style.display = 'none';
-                document.getElementById('smsCode').style.display = 'block';
-                document.getElementById('btnVerifySms').style.display = 'block';
-            } catch (error) {
-                alert("Fout bij SMS versturen: " + error.message);
-                document.getElementById('btnSendSms').innerText = "Verstuur Code";
-            }
-        };
-
-        window.verifyPhoneCode = async () => {
-            const code = document.getElementById('smsCode').value;
-            try {
-                await window.confirmationResult.confirm(code);
-                // Succes! De onAuthStateChanged pakt het hier over.
-            } catch (error) {
-                alert("Verkeerde code ingevoerd!");
-            }
-        };
-
-        // --- OUDE AUTH ---
-        function getUserIdentifier() {
-            // Als je met telefoon inlogt is er soms geen naam, dan laten we het nummer zien
-            if (!auth.currentUser) return 'Anoniem';
-            return auth.currentUser.displayName || auth.currentUser.email?.split('@')[0] || auth.currentUser.phoneNumber || 'Gebruiker';
-        }
-
-        window.authenticate = async (isLogin) => {
-            const email = document.getElementById('email').value;
-            const pass = document.getElementById('pass').value;
-            if(!email || !pass) return alert("Vul alle velden in.");
-            try {
-                isLogin ? await signInWithEmailAndPassword(auth, email, pass) : await createUserWithEmailAndPassword(auth, email, pass);
-            } catch(e) { alert("Inlogfout: " + e.message); }
-        };
-
-        window.logout = async () => {
-            await signOut(auth);
-            location.reload();
-        };
-
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 document.getElementById('authOverlay').style.display = 'none';
                 document.getElementById('app-container').style.display = window.innerWidth <= 768 ? 'flex' : 'grid';
-                updateProfileUI();
-                setupRoomListener();
-                syncChatFeed();
+                
+                // Registreer gebruiker in Firestore
+                const userName = user.displayName || user.email.split('@')[0];
+                await setDoc(doc(db, "users", user.uid), { name: userName, email: user.email });
+                
+                loadUsers();
+                syncMessages();
             } else {
                 document.getElementById('authOverlay').style.display = 'flex';
                 document.getElementById('app-container').style.display = 'none';
             }
         });
 
-        window.addEventListener('resize', () => {
-            if(!auth.currentUser) return;
-            document.getElementById('app-container').style.display = window.innerWidth <= 768 ? 'flex' : 'grid';
-        });
-
-        function updateProfileUI() {
-            if(auth.currentUser) {
-                document.getElementById('myName').innerText = getUserIdentifier();
-                if(auth.currentUser.photoURL) document.getElementById('myAvatar').src = auth.currentUser.photoURL;
-            }
-        }
-
-        window.editProfile = async () => {
-            const newName = prompt("Nieuwe schermnaam:", auth.currentUser.displayName || "");
-            const newAvatar = prompt("URL voor je profielfoto:", auth.currentUser.photoURL || "");
-            
-            if(newName || newAvatar) {
-                await updateProfile(auth.currentUser, {
-                    displayName: newName || auth.currentUser.displayName,
-                    photoURL: newAvatar || auth.currentUser.photoURL
-                });
-                updateProfileUI();
-            }
-        };
-
-        // --- KAMERS & CHAT ---
-        window.handleCreateRoom = async () => {
-            const name = prompt("Nieuwe groepsnaam:");
-            if(!name) return;
-            const cleanName = name.toLowerCase().replace(/[^a-z0-9]/g, "-");
-            await addDoc(collection(db, "rooms"), { name: cleanName, createdAt: Date.now() });
-            window.changeRoom(cleanName);
-        };
-
-        function setupRoomListener() {
-            onSnapshot(collection(db, "rooms"), (snap) => {
-                const list = document.getElementById('roomList');
-                list.innerHTML = `<div class="room-btn ${activeRoomId === 'global' ? 'active' : ''}" onclick="changeRoom('global')"># global</div>`;
-                
-                let rooms = [];
-                snap.forEach(doc => rooms.push(doc.data().name));
-                [...new Set(rooms)].forEach(r => {
-                    list.innerHTML += `<div class="room-btn ${activeRoomId === r ? 'active' : ''}" onclick="changeRoom('${r}')"># ${r}</div>`;
+        // --- GEBRUIKERS & CONTEXT ---
+        function loadUsers() {
+            onSnapshot(collection(db, "users"), (snap) => {
+                const list = document.getElementById('userList');
+                list.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    if(doc.id !== auth.currentUser.uid) {
+                        list.innerHTML += `<div class="item-btn" onclick="setChatContext('private', '${doc.id}', this, '${data.name}')">👤 ${data.name}</div>`;
+                    }
                 });
             });
         }
 
-        window.changeRoom = (id) => { 
-            activeRoomId = id; 
-            document.getElementById('activeRoomTitle').innerHTML = `<span>#</span> ${id}`; 
-            setupRoomListener();
-            syncChatFeed(); 
+        window.setChatContext = (type, targetId, element, displayname = null) => {
+            // Update UI
+            document.querySelectorAll('.item-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+            
+            chatType = type;
+            if(type === 'room') {
+                currentTarget = targetId;
+                document.getElementById('chatTitle').innerText = "# " + targetId;
+            } else {
+                // Maak een unieke ID voor private chats door de twee UIDs alfabetisch te sorteren
+                currentTarget = [auth.currentUser.uid, targetId].sort().join('_');
+                document.getElementById('chatTitle').innerText = "🔒 " + displayname;
+            }
+            syncMessages();
         };
 
-        window.handleSendMessage = async () => {
+        // --- BERICHTEN ---
+        window.sendMessage = async () => {
             const input = document.getElementById('msgInput');
             if(!input.value.trim()) return;
             await sendPayload(input.value, 'text');
             input.value = '';
         };
 
-        window.uploadMedia = function(inputElement, type) {
-            const file = inputElement.files[0];
-            if (!file) return;
+        window.handleFileUpload = (input) => {
+            const file = input.files[0];
+            if(!file) return;
+            const type = file.type.startsWith('video') ? 'video' : 'image';
             const reader = new FileReader();
-            reader.onload = async function(e) { await sendPayload(e.target.result, type); };
+            reader.onload = async (e) => await sendPayload(e.target.result, type);
             reader.readAsDataURL(file);
         };
 
-        async function sendPayload(content, type) {
+        async function sendPayload(content, msgType) {
+            const collectionPath = chatType === 'room' ? "room_messages" : "private_messages";
+            const senderName = auth.currentUser.displayName || auth.currentUser.email.split('@')[0];
+            
             try {
-                await addDoc(collection(db, "messages"), {
+                await addDoc(collection(db, collectionPath), {
+                    target: currentTarget, // Kamernaam OF PrivateChatID
+                    sender: senderName,
+                    senderId: auth.currentUser.uid,
                     text: content,
-                    room: activeRoomId,
-                    sender: getUserIdentifier(),
-                    type: type,
-                    createdAt: Date.now() 
+                    type: msgType,
+                    createdAt: Date.now()
                 });
-            } catch(e) { alert("Verzenden mislukt: " + e.message); }
+            } catch(e) { console.error("Send Error:", e); }
         }
 
-        function syncChatFeed() {
+        function syncMessages() {
             if(unsubscribeMessages) unsubscribeMessages();
-            const q = query(collection(db, "messages"), where("room", "==", activeRoomId));
+            const collectionPath = chatType === 'room' ? "room_messages" : "private_messages";
             
-            unsubscribeMessages = onSnapshot(q, (snap) => {
+            unsubscribeMessages = onSnapshot(query(collection(db, collectionPath)), (snap) => {
                 const feed = document.getElementById('msgFeed');
                 let messages = [];
-                snap.forEach(doc => messages.push({ id: doc.id, ...doc.data() }));
                 
-                messages.sort((a, b) => (a.createdAt || 0) - (b.createdAt || 0));
+                // Filter lokaal (bypast complexe Firebase indexes)
+                snap.forEach(doc => {
+                    if(doc.data().target === currentTarget) messages.push(doc.data());
+                });
+                
+                messages.sort((a,b) => a.createdAt - b.createdAt);
                 feed.innerHTML = '';
+                
                 messages.forEach(data => {
-                    const isMe = data.sender === getUserIdentifier();
+                    const isMe = data.senderId === auth.currentUser.uid;
                     let body = `<div class="bubble">${data.text}</div>`;
                     if(data.type === 'image') body = `<img src="${data.text}" class="media-chat">`;
                     if(data.type === 'video') body = `<video src="${data.text}" controls class="media-chat"></video>`;
@@ -405,11 +273,14 @@
                         </div>
                     `;
                 });
-                setTimeout(() => { feed.scrollTop = feed.scrollHeight; }, 50);
+                setTimeout(() => feed.scrollTop = feed.scrollHeight, 50);
             });
         }
 
-        document.getElementById('msgInput').addEventListener('keypress', (e) => { if(e.key === 'Enter') handleSendMessage(); });
+        document.getElementById('msgInput').addEventListener('keypress', e => { if(e.key === 'Enter') sendMessage(); });
+        window.addEventListener('resize', () => {
+            if(auth.currentUser) document.getElementById('app-container').style.display = window.innerWidth <= 768 ? 'flex' : 'grid';
+        });
     </script>
 </body>
 </html>
