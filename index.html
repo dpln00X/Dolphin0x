@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x | Ultra Connected Suite</title>
+    <title>Dolphin0x | Ironclad Connected Suite</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
@@ -21,7 +21,7 @@
             height: 100vh; overflow: hidden; display: flex;
         }
 
-        /* --- Main Layout --- */
+        /* --- Hoofd Lay-out --- */
         #app-container { display: none; width: 100%; height: 100%; grid-template-columns: 320px 1fr; }
         
         .sidebar { background: var(--bg-glass); border-right: 1px solid var(--border-glass); display: flex; flex-direction: column; padding: 25px; gap: 15px; box-sizing: border-box; }
@@ -30,25 +30,25 @@
         .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 15px; letter-spacing: 1.5px; padding-bottom: 5px; border-bottom: 1px solid var(--border-glass); }
         .list-container { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
         
-        /* Modernized Items List & DM's */
-        .item-btn { padding: 12px 16px; border-radius: 14px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 1rem; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid transparent; }
+        /* Navigatie Knoppen & DM's */
+        .item-btn { padding: 12px 16px; border-radius: 14px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 1rem; transition: all 0.25s ease; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid transparent; }
         .item-btn:hover { background: rgba(255,255,255,0.07); color: white; transform: translateX(4px); }
         .item-btn.active { background: var(--accent-gradient); color: white; font-weight: 600; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35); border: 1px solid rgba(255,255,255,0.15); transform: translateX(4px); }
         .avatar-img { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; background: #27272a; border: 1px solid var(--border-glass); }
 
-        /* Profile Widget Dashboard Style */
+        /* Profiel Widget */
         .profile-widget { background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 18px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-glass); margin-top: auto; }
         .profile-widget .info { flex-grow: 1; overflow: hidden; }
         .profile-widget .name { font-weight: 600; font-size: 0.95rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
         .profile-widget .status { font-size: 0.75rem; color: #10b981; display: flex; align-items: center; gap: 4px; }
 
-        /* --- Chat Architecture --- */
+        /* --- Chat Area --- */
         .chat-area { display: flex; flex-direction: column; flex-grow: 1; position: relative; background: #0c0c0e; }
         .chat-header { padding: 22px 30px; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(18, 18, 20, 0.8); backdrop-filter: blur(20px); z-index: 10; }
-        .chat-header h3 { margin: 0; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.5px; }
+        .chat-header h3 { margin: 0; font-size: 1.35rem; font-weight: 700; }
         
         .msg-feed { flex-grow: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; background: radial-gradient(circle at 50% 10%, #161619 0%, #09090b 100%); }
-        .msg-container { max-width: 70%; display: flex; flex-direction: column; animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1); }
+        .msg-container { max-width: 70%; display: flex; flex-direction: column; animation: slideIn 0.25s ease-out; }
         .msg-container.me { align-self: flex-end; align-items: flex-end; }
         .msg-container.other { align-self: flex-start; align-items: flex-start; }
         
@@ -57,10 +57,10 @@
         .other .bubble { background: #1f1f23; border: 1px solid var(--border-glass); border-bottom-left-radius: 4px; }
         .msg-sender { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; padding: 0 8px; font-weight: 600; }
         
-        /* Media Elements Rendering */
+        /* Media Weergave */
         .media-chat { max-width: 100%; max-height: 320px; border-radius: 18px; margin-top: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); object-fit: cover; }
 
-        /* --- THE MASTER INPUT BAR (Hoger, Breder, Krachtiger) --- */
+        /* --- GEOPTIMALISEERDE INTEGRALE CHATBALK --- */
         .input-bar { padding: 25px 35px; background: rgba(9, 9, 11, 0.98); border-top: 1px solid var(--border-glass); display: flex; gap: 16px; align-items: center; backdrop-filter: blur(15px); }
         
         .media-upload-btn { background: #1f1f23; color: white; border: 1px solid var(--border-glass); width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; box-sizing: border-box; }
@@ -72,7 +72,7 @@
         .send-btn { background: var(--accent-gradient); color: white; border: none; height: 60px; padding: 0 35px; border-radius: 18px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); }
         .send-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
 
-        /* --- Overlays & Call Framework --- */
+        /* --- Knoppen & Systeem Overlays --- */
         .btn { padding: 12px 22px; border-radius: 14px; border: none; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 1rem; }
         .btn-call { background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
         .btn-call:hover { background: #059669; transform: translateY(-2px); }
@@ -82,20 +82,19 @@
         .auth-overlay { position: fixed; inset: 0; background: var(--bg-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .auth-card { background: #141416; padding: 45px; border-radius: 28px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border-glass); box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
         .auth-card input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--border-glass); background: #09090b; color: white; box-sizing: border-box; font-size: 1rem; }
-        #phoneAuthSection { display: none; margin-top: 15px; padding: 15px; background: #1f1f23; border-radius: 16px; border: 1px solid var(--border-glass); }
 
-        /* Video System Overlay */
+        /* Live Video Bellen Overlay */
         .call-overlay { position: fixed; inset: 0; background: rgba(5, 5, 6, 0.97); backdrop-filter: blur(30px); z-index: 9998; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
         .video-grid { display: grid; grid-template-columns: 1fr; gap: 25px; width: 100%; max-width: 1100px; aspect-ratio: 16/9; margin-bottom: 35px; }
         @media (min-width: 750px) { .video-grid { grid-template-columns: 1fr 1fr; } }
         .video-box { background: #000; border-radius: 28px; border: 1px solid var(--border-glass); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 55px rgba(0,0,0,0.6); }
         .video-box video { width: 100%; height: 100%; object-fit: cover; }
         .video-badge { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); }
-        .call-controls { display: flex; gap: 20px; background: rgba(255,255,255,0.04); padding: 16px 35px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .call-controls { display: flex; gap: 20px; background: rgba(255,255,255,0.04); padding: 16px 35px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.08); }
 
         @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Responsive Flow Engine */
+        /* Mobiele Optimalisatie Matrix */
         @media (max-width: 768px) {
             #app-container { display: flex; flex-direction: column; }
             .sidebar { padding: 15px; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border-glass); max-height: 190px; gap: 10px; }
@@ -114,35 +113,22 @@
 </head>
 <body>
 
+    <!-- Auth Module Screen -->
     <div id="authOverlay" class="auth-overlay">
         <div class="auth-card">
             <h1 class="sidebar-header" style="font-size: 2.8rem; margin: 0 0 5px 0;">Dolphin0x</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Master Suite Portal</p>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Secure Communication Engine</p>
             
             <input type="email" id="email" placeholder="E-mailadres">
             <input type="password" id="pass" placeholder="Wachtwoord">
             <button class="send-btn" style="width: 100%; margin-top: 15px; height: 52px;" onclick="authEmail(true)">Inloggen</button>
             <button class="btn" style="width: 100%; margin-top: 10px; background: #1f1f23; height: 52px;" onclick="authEmail(false)">Account Aanmaken</button>
-            
-            <div style="margin: 20px 0; font-size: 0.8rem; color: var(--text-muted); display:flex; align-items:center;">
-                <span style="flex:1; border-bottom:1px solid var(--border-glass); margin-right:10px;"></span>OF<span style="flex:1; border-bottom:1px solid var(--border-glass); margin-left:10px;"></span>
-            </div>
-            
-            <div style="display: flex; gap: 10px;">
-                <button class="btn" style="flex: 1; background: white; color: black; justify-content: center; font-weight:700;" onclick="loginGoogle()">🌐 Google</button>
-                <button class="btn" style="flex: 1; background: #27272a; justify-content: center;" onclick="togglePhoneUi()">📱 SMS</button>
-            </div>
-
-            <div id="phoneAuthSection">
-                <div id="recaptcha-container"></div>
-                <input type="tel" id="phoneNumber" placeholder="+31 6 12345678">
-                <button class="btn btn-primary" id="btnSendSms" style="width:100%; justify-content:center;" onclick="sendSmsCode()">Code Verzenden</button>
-                <input type="text" id="smsCode" placeholder="6-Cijferige Code" style="display:none;">
-                <button class="btn" id="btnVerifySms" style="width:100%; display:none; background:#10b981; justify-content:center;" onclick="verifySmsCode()">Verifieer Code</button>
-            </div>
+            <hr style="border-color: rgba(255,255,255,0.08); margin: 20px 0;">
+            <button class="btn" style="width: 100%; background: white; color: black; justify-content: center; font-weight:700; height: 52px;" onclick="loginGoogle()">🌐 Inloggen met Google</button>
         </div>
     </div>
 
+    <!-- WebRTC Live Call HUD -->
     <div id="callOverlay" class="call-overlay">
         <h2 style="margin-top: 0; font-weight: 800; font-size: 2.2rem; letter-spacing: -1px;">Dolphin0x Live Video</h2>
         <div class="video-grid">
@@ -152,7 +138,7 @@
             </div>
             <div class="video-box">
                 <video id="remoteVideo" autoplay playsinline></video>
-                <div class="video-badge">Verbinding...</div>
+                <div class="video-badge" id="remoteStatus">Verbinding maken...</div>
             </div>
         </div>
         <div class="call-controls">
@@ -162,7 +148,9 @@
         </div>
     </div>
 
+    <!-- Application Architecture Workspace -->
     <div id="app-container">
+        <!-- Sidebar Workspace Navigation -->
         <div class="sidebar">
             <div class="sidebar-header">Dolphin0x</div>
             
@@ -174,8 +162,10 @@
 
             <div class="section-title">Direct Messages</div>
             <div id="userList" class="list-container">
-                </div>
+                <!-- Real-time database synchronisatie -->
+            </div>
 
+            <!-- Profile Dashboard Panel -->
             <div class="profile-widget">
                 <img id="myAvatar" class="avatar-img" src="" alt="Me">
                 <div class="info">
@@ -183,10 +173,11 @@
                     <div class="status"><span style="width:6px; height:6px; background:#10b981; border-radius:50%;"></span>Online</div>
                 </div>
                 <button class="btn-icon" onclick="modifyProfile()" title="Profiel Aanpassen">⚙️</button>
-                <button class="btn-icon" onclick="logout()" title="Uitloggen" style="color:#ef4444;"> Navarreer 🚪</button>
+                <button class="btn-icon" onclick="logout()" title="Uitloggen" style="color:#ef4444; font-size:1rem;">🚪</button>
             </div>
         </div>
 
+        <!-- Central Chat Workspace -->
         <div class="chat-area">
             <div class="chat-header">
                 <h3 id="chatTitle">🌍 # global</h3>
@@ -195,6 +186,7 @@
             
             <div id="msgFeed" class="msg-feed"></div>
             
+            <!-- Structural High-Performance Input Console -->
             <div class="input-bar">
                 <input type="file" id="mediaUpload" accept="image/*,video/*" style="display:none;" onchange="uploadFilePayload(this)">
                 <label for="mediaUpload" class="media-upload-btn" title="Foto of video selecteren">📸</label>
@@ -207,10 +199,10 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, RecaptchaVerifier, signInWithPhoneNumber, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Firebase Configuration Runtime Hook
+        // Firebase Configuration Setup
         const firebaseConfig = {
             apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
             authDomain: "dolphin0x.firebaseapp.com",
@@ -226,31 +218,17 @@
 
         let chatType = 'room', currentTarget = 'global', remoteUserUid = null, unsubscribeMessages = null;
         let localStream = null, peerConnection = null, isMicEnabled = true, isCamEnabled = true, callUnsubscribe = null;
-        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] };
+        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
 
-        // --- AUTH ENGINE ---
+        // --- AUTH PIPELINE ---
         window.authEmail = async (isLogin) => {
             const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            if(!e || !p) return alert("Vul alle inloggegevens in.");
-            try { isLogin ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); } 
-            catch(err) { alert(err.message); }
+            if(!e || !p) return alert("Vul een geldig e-mailadres en wachtwoord in.");
+            try { 
+                isLogin ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); 
+            } catch(err) { alert("Fout: " + err.message); }
         };
-        window.loginGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e){} };
-        window.togglePhoneUi = () => { const s = document.getElementById('phoneAuthSection'); s.style.display = s.style.display === 'block' ? 'none' : 'block'; };
-        
-        window.sendSmsCode = async () => {
-            const num = document.getElementById('phoneNumber').value;
-            if(!num.startsWith('+')) return alert("Gebruik landcode (+316...)");
-            if(!window.recaptchaVerifier) window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', { 'size': 'invisible' });
-            try {
-                window.confirmationResult = await signInWithPhoneNumber(auth, num, window.recaptchaVerifier);
-                document.getElementById('phoneNumber').style.display = 'none';
-                document.getElementById('btnSendSms').style.display = 'none';
-                document.getElementById('smsCode').style.display = 'block';
-                document.getElementById('btnVerifySms').style.display = 'block';
-            } catch(e){ alert(e.message); }
-        };
-        window.verifySmsCode = async () => { try { await window.confirmationResult.confirm(document.getElementById('smsCode').value); } catch(e){ alert("Foutieve code."); } };
+        window.loginGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e){ alert(e.message); } };
         window.logout = () => signOut(auth).then(() => location.reload());
 
         onAuthStateChanged(auth, async (user) => {
@@ -261,7 +239,9 @@
                 const defaultName = user.displayName || user.email?.split('@')[0] || "User_" + user.uid.substring(0,4);
                 const defaultAvatar = user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`;
                 
-                await setDoc(doc(db, "users", user.uid), { name: defaultName, photoURL: defaultAvatar, uid: user.uid }, { merge: true });
+                try {
+                    await setDoc(doc(db, "users", user.uid), { name: defaultName, photoURL: defaultAvatar, uid: user.uid }, { merge: true });
+                } catch(e) { console.error("Gebruikersprofiel synchronisatie mislukt:", e); }
                 
                 syncProfileWidget();
                 listenUsersList(); 
@@ -270,8 +250,6 @@
             }
         });
 
-       
-    
         function syncProfileWidget() {
             const u = auth.currentUser;
             if(u) {
@@ -283,22 +261,22 @@
         window.modifyProfile = async () => {
             const newName = prompt("Nieuwe weergavenaam:", auth.currentUser.displayName || "");
             const newAvatar = prompt("Nieuwe Avatar URL (Laat leeg voor standaard):", auth.currentUser.photoURL || "");
-            
             if(newName || newAvatar) {
-                await updateProfile(auth.currentUser, {
-                    displayName: newName || auth.currentUser.displayName,
-                    photoURL: newAvatar || auth.currentUser.photoURL
-                });
-                await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                    name: newName || auth.currentUser.displayName,
-                    photoURL: newAvatar || auth.currentUser.photoURL
-                });
-                syncProfileWidget();
-                alert("Profiel succesvol geüpdatet!");
+                try {
+                    await updateProfile(auth.currentUser, {
+                        displayName: newName || auth.currentUser.displayName,
+                        photoURL: newAvatar || auth.currentUser.photoURL
+                    });
+                    await updateDoc(doc(db, "users", auth.currentUser.uid), {
+                        name: newName || auth.currentUser.displayName,
+                        photoURL: newAvatar || auth.currentUser.photoURL
+                    });
+                    syncProfileWidget();
+                } catch(e) { alert("Fout bij updaten profiel: " + e.message); }
             }
         };
 
-        // --- CHAT ARCHITECTURE SYNC ---
+        // --- REAL-TIME DATA QUERY PIPELINE (GEFIXT) ---
         function listenUsersList() {
             onSnapshot(collection(db, "users"), (snap) => {
                 const list = document.getElementById('userList');
@@ -334,7 +312,6 @@
             syncMessageFeed();
         };
 
-        // --- ENGINE BERICHTEN & MEDIA PIPELINE ---
         window.executeSendMessage = async () => {
             const input = document.getElementById('msgInput');
             if(!input.value.trim()) return;
@@ -345,7 +322,7 @@
         window.uploadFilePayload = (input) => {
             const file = input.files[0];
             if(!file) return;
-            if(file.size > 1048576) return alert("Bestand is te groot! Maximaal 1MB via chatbalk.");
+            if(file.size > 1048576) return alert("Fout: Bestand is groter dan 1MB. Firestore documenten weigeren dit.");
             const type = file.type.startsWith('video') ? 'video' : 'image';
             const reader = new FileReader();
             reader.onload = async (e) => await pushPayload(e.target.result, type);
@@ -354,24 +331,33 @@
 
         async function pushPayload(content, msgType) {
             const path = chatType === 'room' ? "room_messages" : "private_messages";
-            await addDoc(collection(db, path), {
-                target: currentTarget,
-                sender: auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
-                senderId: auth.currentUser.uid,
-                text: content,
-                type: msgType,
-                createdAt: Date.now()
-            });
+            try {
+                await addDoc(collection(db, path), {
+                    target: currentTarget,
+                    sender: auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
+                    senderId: auth.currentUser.uid,
+                    text: content,
+                    type: msgType,
+                    createdAt: Date.now()
+                });
+            } catch(e) { alert("Kan bericht niet verzenden: " + e.message); }
         }
 
+        // Gefixte Query: Haalt alléén de relevante chatdata op, niet de hele database!
         function syncMessageFeed() {
             if(unsubscribeMessages) unsubscribeMessages();
             const path = chatType === 'room' ? "room_messages" : "private_messages";
-            unsubscribeMessages = onSnapshot(query(collection(db, path)), (snap) => {
+            
+            const q = query(collection(db, path), where("target", "==", currentTarget));
+            
+            unsubscribeMessages = onSnapshot(q, (snap) => {
                 const feed = document.getElementById('msgFeed');
                 let msgs = [];
-                snap.forEach(doc => { if(doc.data().target === currentTarget) msgs.push(doc.data()); });
+                snap.forEach(doc => msgs.push(doc.data()));
+                
+                // Sorteer lokaal op tijd om index-fouten in Firebase te omzeilen
                 msgs.sort((a,b) => a.createdAt - b.createdAt);
+                
                 feed.innerHTML = '';
                 msgs.forEach(data => {
                     const isMe = data.senderId === auth.currentUser.uid;
@@ -381,33 +367,45 @@
                     feed.innerHTML += `<div class="msg-container ${isMe ? 'me' : 'other'}"><div class="msg-sender">${isMe ? 'Jij' : data.sender}</div>${body}</div>`;
                 });
                 setTimeout(() => feed.scrollTop = feed.scrollHeight, 40);
-            });
+            }, (error) => { console.error("Firestore sync error:", error); });
         }
 
-        // --- EXPERT WEB-RTC SIGNALING PIPELINE ---
+        // --- CRITICAL WEB-RTC FIXED SIGNALING ---
         window.initiateWebRtcCall = async () => {
             if(!remoteUserUid) return;
             document.getElementById('callOverlay').style.display = 'flex';
+            
             localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
             document.getElementById('localVideo').srcObject = localStream;
             
             peerConnection = new RTCPeerConnection(rtcConfig);
             localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.ontrack = (e) => { document.getElementById('remoteVideo').srcObject = e.streams[0]; };
+            peerConnection.ontrack = (e) => { 
+                document.getElementById('remoteVideo').srcObject = e.streams[0]; 
+                document.getElementById('remoteStatus').innerText = "Live Verbinding";
+            };
 
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
 
-            peerConnection.onicecandidate = async (e) => {
-                if (!e.candidate) { 
-                    await setDoc(doc(db, "calls", currentTarget), {
-                        offer: JSON.stringify(peerConnection.localDescription), callerId: auth.currentUser.uid, calleeId: remoteUserUid, status: 'pending'
-                    });
-                }
-            };
+            // Gecorrigeerd: Fast-Gathering safety loop om haperingen te voorkomen
+            await new Promise((resolve) => {
+                let count = 0;
+                peerConnection.onicecandidate = (e) => {
+                    if (!e.candidate || count++ > 2) resolve();
+                };
+                setTimeout(resolve, 500); // Fail-safe harde timeout na 500ms
+            });
+
+            await setDoc(doc(db, "calls", currentTarget), {
+                offer: JSON.stringify(peerConnection.localDescription), callerId: auth.currentUser.uid, calleeId: remoteUserUid, status: 'pending'
+            });
+
             callUnsubscribe = onSnapshot(doc(db, "calls", currentTarget), (snap) => {
                 const d = snap.data();
-                if (d && d.answer && peerConnection.signalingState !== "stable") peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(d.answer)));
+                if (d && d.answer && peerConnection.signalingState !== "stable") {
+                    peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(d.answer)));
+                }
             });
         };
 
@@ -420,17 +418,25 @@
                             document.getElementById('callOverlay').style.display = 'flex';
                             localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
                             document.getElementById('localVideo').srcObject = localStream;
+                            
                             peerConnection = new RTCPeerConnection(rtcConfig);
                             localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-                            peerConnection.ontrack = (e) => { document.getElementById('remoteVideo').srcObject = e.streams[0]; };
+                            peerConnection.ontrack = (e) => { 
+                                document.getElementById('remoteVideo').srcObject = e.streams[0]; 
+                                document.getElementById('remoteStatus').innerText = "Live Verbinding";
+                            };
                             
                             await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(d.offer)));
                             const answer = await peerConnection.createAnswer();
                             await peerConnection.setLocalDescription(answer);
 
-                            peerConnection.onicecandidate = async (e) => {
-                                if(!e.candidate) await setDoc(doc(db, "calls", docSnap.id), { answer: JSON.stringify(peerConnection.localDescription), status: 'active' }, { merge: true });
-                            };
+                            await new Promise((resolve) => {
+                                let count = 0;
+                                peerConnection.onicecandidate = (e) => { if (!e.candidate || count++ > 2) resolve(); };
+                                setTimeout(resolve, 500);
+                            });
+
+                            await setDoc(doc(db, "calls", docSnap.id), { answer: JSON.stringify(peerConnection.localDescription), status: 'active' }, { merge: true });
                             callUnsubscribe = onSnapshot(doc(db, "calls", docSnap.id), (s) => { if(!s.exists()) hangUpCall(); });
                         } else { await deleteDoc(doc(db, "calls", docSnap.id)); }
                     }
@@ -439,7 +445,7 @@
         }
 
         window.toggleMicrophone = () => { isMicEnabled = !isMicEnabled; localStream.getAudioTracks().forEach(t => t.enabled = isMicEnabled); document.getElementById('btnToggleMic').innerText = isMicEnabled ? "🎙️ Mic Dempen" : "🚫 Mic Inschakelen"; };
-        window.toggleCamera = () => { isCamEnabled = !isCamEnabled; localStream.getVideoTracks().forEach(t => t.enabled = isCamEnabled); document.getElementById('btnToggleCam').innerText = isCamEnabled ? "📷 Cam Uitzetten" : "❌ Cam Aanzetten"; document.getElementById('localVideo').style.opacity = isCamEnabled ? "1" : "0.2"; };
+        window.toggleCamera = () => { isCamEnabled = !isCamEnabled; localStream.getVideoTracks().forEach(t => t.enabled = isCamEnabled); document.getElementById('btnToggleCam').innerText = isCamEnabled ? "📷 Cam Uitzetten" : "❌ Cam Aanzetten"; };
         
         window.hangUpCall = async () => {
             if(callUnsubscribe) callUnsubscribe();
@@ -448,6 +454,7 @@
             localStream = null; peerConnection = null;
             try { await deleteDoc(doc(db, "calls", currentTarget)); } catch(e){}
             document.getElementById('callOverlay').style.display = 'none';
+            document.getElementById('remoteStatus').innerText = "Verbinding maken...";
         };
 
         document.getElementById('msgInput').addEventListener('keypress', e => { if(e.key === 'Enter') executeSendMessage(); });
