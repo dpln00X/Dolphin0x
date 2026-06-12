@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x | Master Suite</title>
+    <title>Dolphin0x | Master Suite Elite</title>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
@@ -50,6 +50,8 @@
         .btn { padding: 10px 18px; border-radius: 10px; border: none; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; }
         .btn-primary { background: var(--accent-gradient); }
         .btn-secondary { background: rgba(255,255,255,0.1); }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
         .btn-icon { background: transparent; font-size: 1.2rem; cursor: pointer; border: none; transition: 0.2s; }
         .btn-icon:hover { transform: scale(1.1); }
 
@@ -58,6 +60,15 @@
         .auth-card { background: var(--bg-glass); padding: 40px; border-radius: 20px; width: 90%; max-width: 340px; text-align: center; border: 1px solid var(--border-glass); }
         .auth-card input { width: 100%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid var(--border-glass); background: rgba(0,0,0,0.5); color: white; box-sizing: border-box; }
         
+        /* --- NIEUW: Video Call Overlay --- */
+        .call-overlay { position: fixed; inset: 0; background: rgba(7, 10, 19, 0.95); backdrop-filter: blur(15px); z-index: 9998; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .video-grid { display: grid; grid-template-columns: 1fr; gap: 20px; width: 100%; max-width: 800px; aspect-ratio: 16/9; margin-bottom: 30px; }
+        @media (min-width: 600px) { .video-grid { grid-template-columns: 1fr 1fr; } }
+        .video-box { background: #111827; border-radius: 16px; border: 1px solid var(--border-glass); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+        .video-box video { width: 100%; height: 100%; object-fit: cover; }
+        .video-label { position: absolute; bottom: 15px; left: 15px; background: rgba(0,0,0,0.6); padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+        .call-controls { display: flex; gap: 15px; }
+
         @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         /* Responsive */
@@ -88,7 +99,26 @@
             
             <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 20px 0;">
             <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;" onclick="loginGoogle()">🌐 Login met Google</button>
-            <button class="btn btn-secondary" style="width: 100%;" onclick="alert('SMS Login ingebouwd in code, vereist Firebase setup!')">📱 SMS Login</button>
+        </div>
+    </div>
+
+    <div id="callOverlay" class="call-overlay">
+        <h2 style="margin-top: 0; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Dolphin0x Live Call</h2>
+        <div class="video-grid">
+            <div class="video-box">
+                <video id="localVideo" autoplay playsinline muted></video>
+                <div class="video-label">Jij (Jouw Preview)</div>
+            </div>
+            <div class="video-box">
+                <video id="remoteVideo" autoplay playsinline></video>
+                <div id="remotePlaceholder" style="position: absolute; color: var(--text-muted);">Wachten op verbinding...</div>
+                <div class="video-label">Gesprekspartner</div>
+            </div>
+        </div>
+        <div class="call-controls">
+            <button id="btnToggleMic" class="btn btn-secondary" onclick="toggleMicrophone()">🎙️ Mic Aan</button>
+            <button id="btnToggleCam" class="btn btn-secondary" onclick="toggleCamera()">📷 Camera Aan</button>
+            <button class="btn btn-danger" onclick="endCall()">🛑 Ophangen</button>
         </div>
     </div>
 
@@ -112,7 +142,7 @@
         <div class="chat-area">
             <div class="chat-header">
                 <h3 id="chatTitle" style="margin: 0; font-weight: 600;"># global</h3>
-                <button class="btn btn-secondary" onclick="alert('WebRTC call interface opent hier!')">📞 Video Call</button>
+                <button id="btnStartCall" class="btn btn-secondary" onclick="startCall()" style="display: none;">📞 Video Call</button>
             </div>
             
             <div id="msgFeed" class="msg-feed"></div>
@@ -144,9 +174,14 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        let chatType = 'room'; // 'room' of 'private'
+        let chatType = 'room';
         let currentTarget = 'global';
         let unsubscribeMessages = null;
+        
+        // Call Variabelen
+        let localStream = null;
+        let isMicEnabled = true;
+        let isCamEnabled = true;
 
         // --- AUTHENTICATIE ---
         window.authEmail = async (isLogin) => {
@@ -168,7 +203,6 @@
                 document.getElementById('authOverlay').style.display = 'none';
                 document.getElementById('app-container').style.display = window.innerWidth <= 768 ? 'flex' : 'grid';
                 
-                // Registreer gebruiker in Firestore
                 const userName = user.displayName || user.email.split('@')[0];
                 await setDoc(doc(db, "users", user.uid), { name: userName, email: user.email });
                 
@@ -195,23 +229,77 @@
         }
 
         window.setChatContext = (type, targetId, element, displayname = null) => {
-            // Update UI
             document.querySelectorAll('.item-btn').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
             
             chatType = type;
+            const callBtn = document.getElementById('btnStartCall');
+
             if(type === 'room') {
                 currentTarget = targetId;
                 document.getElementById('chatTitle').innerText = "# " + targetId;
+                callBtn.style.display = 'none'; // Verberg bellen in publieke kanalen
             } else {
-                // Maak een unieke ID voor private chats door de twee UIDs alfabetisch te sorteren
                 currentTarget = [auth.currentUser.uid, targetId].sort().join('_');
                 document.getElementById('chatTitle').innerText = "🔒 " + displayname;
+                callBtn.style.display = 'block'; // Toon bellen in DM
             }
             syncMessages();
         };
 
-        // --- BERICHTEN ---
+        // --- BEREIKBAARHEID & MEDIA (BELLEN) ---
+        window.startCall = async () => {
+            document.getElementById('callOverlay').style.display = 'flex';
+            
+            try {
+                // Vraag camera en microfoon op via de browser API
+                localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+                document.getElementById('localVideo').srcObject = localStream;
+                
+                isMicEnabled = true;
+                isCamEnabled = true;
+                updateMediaLabels();
+            } catch (err) {
+                alert("Kon geen toegang krijgen tot media-apparaten: " + err.message);
+                endCall();
+            }
+        };
+
+        window.toggleMicrophone = () => {
+            if (!localStream) return;
+            isMicEnabled = !isMicEnabled;
+            // Schakel audio track aan of uit
+            localStream.getAudioTracks().forEach(track => track.enabled = isMicEnabled);
+            updateMediaLabels();
+        };
+
+        window.toggleCamera = () => {
+            if (!localStream) return;
+            isCamEnabled = !isCamEnabled;
+            // Schakel video track aan of uit
+            localStream.getVideoTracks().forEach(track => track.enabled = isCamEnabled);
+            updateMediaLabels();
+        };
+
+        function updateMediaLabels() {
+            document.getElementById('btnToggleMic').innerText = isMicEnabled ? "🎙️ Mic Aan" : "🚫 Mic Gedempt";
+            document.getElementById('btnToggleCam').innerText = isCamEnabled ? "📷 Camera Aan" : "❌ Camera Uit";
+            
+            // Visuele feedback voor je eigen camera preview
+            document.getElementById('localVideo').style.opacity = isCamEnabled ? "1" : "0.2";
+        }
+
+        window.endCall = () => {
+            if (localStream) {
+                // Stop alle lopende hardware streams (lampje camera gaat uit)
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+            document.getElementById('localVideo').srcObject = null;
+            document.getElementById('callOverlay').style.display = 'none';
+        };
+
+        // --- BERICHTEN LOGICA ---
         window.sendMessage = async () => {
             const input = document.getElementById('msgInput');
             if(!input.value.trim()) return;
@@ -234,7 +322,7 @@
             
             try {
                 await addDoc(collection(db, collectionPath), {
-                    target: currentTarget, // Kamernaam OF PrivateChatID
+                    target: currentTarget,
                     sender: senderName,
                     senderId: auth.currentUser.uid,
                     text: content,
@@ -252,7 +340,6 @@
                 const feed = document.getElementById('msgFeed');
                 let messages = [];
                 
-                // Filter lokaal (bypast complexe Firebase indexes)
                 snap.forEach(doc => {
                     if(doc.data().target === currentTarget) messages.push(doc.data());
                 });
