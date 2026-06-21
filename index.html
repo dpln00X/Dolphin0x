@@ -100,6 +100,7 @@
             font-size: 0.85rem;
             border-radius: 8px;
             padding: 6px 10px;
+            text-align: center;
         }
 
         .input-area {
@@ -214,7 +215,6 @@
     </div>
 
     <script>
-        // LAAT DIT LEEG! De website vraagt zelf om de key via een pop-up.
         let apiKey = localStorage.getItem('dolphin_api_key') || "";
 
         const chatLog = document.getElementById('chatLog');
@@ -274,6 +274,11 @@
                     localStorage.setItem('dolphin_api_key', apiKey);
                 }
             }
+        }
+
+        function resetApiKey() {
+            localStorage.removeItem('dolphin_api_key');
+            apiKey = "";
         }
 
         async function connectHardware() {
@@ -344,12 +349,13 @@
         }
 
         function clearHistory() {
-            if (confirm("Resetten?")) {
+            if (confirm("Volledige reset uitvoeren? (Wist ook de opgeslagen API-key)")) {
                 chatHistory = [];
                 localStorage.removeItem('dolphin_ai_history');
+                resetApiKey();
                 chatLog.innerHTML = '';
-                appendChatMessage('model', 'Systeem herstart.');
-                if (synth.speaking) synth.cancel();
+                appendChatMessage('model', 'Systeem herstart. Voer zo direct je nieuwe key in.');
+                checkApiKey();
             }
         }
 
@@ -404,8 +410,11 @@
 
                 const data = await response.json();
                 
-                if (!data.candidates || data.candidates.length === 0) {
-                    appendSystemMessage('API Fout: Je API-key is waarschijnlijk ongeldig. Wis je geschiedenis of herstart om een nieuwe in te voeren.');
+                // Als Google een error-object teruggeeft of candidates mist, is de key fout
+                if (data.error || !data.candidates || data.candidates.length === 0) {
+                    let errMsg = data.error ? data.error.message : "Ongeldige sleutel";
+                    appendSystemMessage(`API Fout: ${errMsg}. Je opgeslagen Key is nu automatisch gewist.`);
+                    resetApiKey();
                     statusText.innerText = "Standby";
                     return;
                 }
@@ -444,7 +453,7 @@
             } catch (error) {
                 console.error(error);
                 statusText.innerText = "Fout";
-                appendSystemMessage('Netwerkfout bij het verbinden met AI Core.');
+                appendSystemMessage('Netwerkfout. Controleer je internet of API Key.');
             }
         }
 
