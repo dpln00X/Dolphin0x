@@ -45,6 +45,12 @@
             color: #1a1a1a;
         }
 
+        .header-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
         #statusText {
             font-size: 0.85rem;
             color: #666;
@@ -88,9 +94,11 @@
 
         .msg.system {
             align-self: center;
-            background-color: transparent;
-            color: #8e8e93;
-            font-size: 0.8rem;
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+            font-size: 0.85rem;
+            border-radius: 8px;
         }
 
         .input-area {
@@ -162,6 +170,16 @@
             background-color: #636366;
         }
 
+        .btn-connect {
+            background-color: #5856d6;
+            font-size: 0.8rem;
+            height: 30px;
+            padding: 0 12px;
+        }
+        .btn-connect.connected {
+            background-color: #34c759;
+        }
+
         @media (max-width: 600px) {
             body { align-items: flex-start; }
             .chat-container { height: 100vh; border-radius: 0; border: none; }
@@ -178,14 +196,17 @@
     <div class="chat-container">
         <div class="chat-header">
             <h2>Dolphin0x AI</h2>
-            <span id="statusText">Standby</span>
+            <div class="header-controls">
+                <button id="connectBtn" class="btn btn-connect" onclick="connectHardware()">🔌 Verbind MCU</button>
+                <span id="statusText">Standby</span>
+            </div>
         </div>
 
         <div id="chatLog" class="chat-log"></div>
 
         <div class="input-area">
             <button id="micBtn" class="btn btn-icon btn-mic" onclick="startVoiceInput()">🎙️</button>
-            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht...">
+            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht of geef een hardware commando...">
             <button class="btn" onclick="processTextQuery()">Verstuur</button>
             <button class="btn btn-icon btn-clear" onclick="clearHistory()">🗑️</button>
         </div>
@@ -193,11 +214,14 @@
 
     <script>
         let apiKey = localStorage.getItem('dolphin_api_key') || "";
+        let serialPort = null;
+        let serialWriter = null;
 
         const chatLog = document.getElementById('chatLog');
         const statusText = document.getElementById('statusText');
         const textQueryInput = document.getElementById('textQuery');
         const micBtn = document.getElementById('micBtn');
+        const connectBtn = document.getElementById('connectBtn');
 
         let chatHistory = [];
         const synth = window.speechSynthesis;
@@ -214,16 +238,14 @@
                 statusText.innerText = "Luisteren...";
                 micBtn.classList.add('listening');
             };
-            recognition.onspeechend = () => {
-                recognition.stop();
-            };
+            recognition.onspeechend = () => { recognition.stop(); };
             recognition.onend = () => {
                 micBtn.classList.remove('listening');
                 statusText.innerText = "Standby";
             };
             recognition.onerror = () => {
                 statusText.innerText = "Fout";
-                appendMessage('system', 'Microfoonfout');
+                appendSystemMessage('Microfoonfout of geen gehoor.');
             };
             recognition.onresult = async (event) => {
                 textQueryInput.value = event.results[0][0].transcript;
@@ -240,13 +262,13 @@
                 chatHistory = JSON.parse(savedChats);
                 renderChatLog();
             } else {
-                appendMessage('ai', 'Systeem gereed.');
+                appendChatMessage('model', 'Systeem gereed. Sluit je microcontroller aan via de paarse knop bovenaan om hardware aan te sturen.');
             }
         };
 
         function checkApiKey() {
             if (!apiKey) {
-                const userKey = prompt("Voer API Key in:");
+                const userKey = prompt("Voer Gemini API Key in:");
                 if (userKey) {
                     apiKey = userKey.trim();
                     localStorage.setItem('dolphin_api_key', apiKey);
@@ -254,14 +276,58 @@
             }
         }
 
-        function appendMessage(role, text) {
-            if (role !== 'system') {
-                chatHistory.push({ role, text });
-                localStorage.setItem('dolphin_ai_history', JSON.stringify(chatHistory));
+        // Web Serial API verbinding opzetten
+        async function connectHardware() {
+            if ('serial' in navigator) {
+                try {
+                    serialPort = await navigator.serial.requestPort();
+                    await serialPort.open({ baudRate: 9600 });
+                    serialWriter = serialPort.writable.getWriter();
+                    
+                    connectBtn.innerText = "⚡ Verbonden";
+                    connectBtn.classList.add('connected');
+                    appendSystemMessage('Succesvol verbonden met microcontroller.');
+                } catch (error) {
+                    console.error(error);
+                    appendSystemMessage('Verbinding met microcontroller afgebroken.');
+                }
+            } else {
+                alert("Je browser ondersteunt geen Web Serial API. Gebruik Google Chrome of Edge op een pc/laptop.");
             }
+        }
+
+        // Commando's fysiek over de seriele poort sturen
+        async function sendToMicrocontroller(command) {
+            if (!serialWriter) {
+                appendSystemMessage('Actie mislukt: Geen microcontroller verbonden via USB.');
+                return "Error: No device connected";
+            }
+            try {
+                const encoder = new TextEncoder();
+                await serialWriter.write(encoder.encode(command + "\n"));
+                appendSystemMessage(`Hardware commando verzonden: ${command}`);
+                return "Success";
+            } catch (error) {
+                console.error(error);
+                return "Error writing to serial port";
+            }
+        }
+
+        function appendChatMessage(role, text) {
+            chatHistory.push({ role, parts: [{ text }] });
+            localStorage.setItem('dolphin_ai_history', JSON.stringify(chatHistory.filter(m => m.role !== 'tool')));
+            
             const msgDiv = document.createElement('div');
-            msgDiv.className = `msg ${role}`;
+            msgDiv.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
             msgDiv.innerText = text;
+            chatLog.appendChild(msgDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function appendSystemMessage(text) {
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'msg system';
+            msgDiv.innerText = `[${text}]`;
             chatLog.appendChild(msgDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
         }
@@ -269,10 +335,12 @@
         function renderChatLog() {
             chatLog.innerHTML = '';
             chatHistory.forEach(msg => {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = `msg ${msg.role}`;
-                msgDiv.innerText = msg.text;
-                chatLog.appendChild(msgDiv);
+                if (msg.parts && msg.parts[0] && msg.parts[0].text) {
+                    const msgDiv = document.createElement('div');
+                    msgDiv.className = `msg ${msg.role === 'user' ? 'user' : 'ai'}`;
+                    msgDiv.innerText = msg.parts[0].text;
+                    chatLog.appendChild(msgDiv);
+                }
             });
             chatLog.scrollTop = chatLog.scrollHeight;
         }
@@ -282,7 +350,7 @@
                 chatHistory = [];
                 localStorage.removeItem('dolphin_ai_history');
                 chatLog.innerHTML = '';
-                appendMessage('ai', 'Systeem gereset.');
+                appendChatMessage('model', 'Systeem gereset.');
                 if (synth.speaking) synth.cancel();
             }
         }
@@ -297,7 +365,7 @@
             if (!query) return;
             textQueryInput.value = '';
             
-            appendMessage('user', query);
+            appendChatMessage('user', query);
             statusText.innerText = "Verwerken...";
             await askAI();
         }
@@ -308,32 +376,77 @@
                 return;
             }
 
-            const apiContents = chatHistory.map(msg => ({
-                role: msg.role === 'user' ? 'user' : 'model',
-                parts: [{ text: msg.text }]
-            }));
+            // Definieer de hardware-functie die de AI kan aanroepen
+            const hardwareTool = {
+                functionDeclarations: [{
+                    name: "controlHardware",
+                    description: "Stuurt een specifiek commando naar de aangesloten microcontroller om componenten (zoals leds, motoren of relais) te schakelen.",
+                    parameters: {
+                        type: "OBJECT",
+                        properties: {
+                            command: {
+                                type: "STRING",
+                                description: "Het exacte commando-woord (bijv. 'LED_ON', 'LED_OFF', 'SERVO_OPEN')."
+                            }
+                        },
+                        required: ["command"]
+                    }
+                }]
+            };
 
             try {
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        contents: apiContents,
-                        tools: [{ googleSearch: {} }]
+                        contents: chatHistory,
+                        tools: [hardwareTool]
                     })
                 });
 
                 const data = await response.json();
-                let aiResponseText = data.candidates[0].content.parts[0].text;
-                
-                statusText.innerText = "Standby";
-                appendMessage('ai', aiResponseText);
-                speakBack(aiResponseText);
+                const part = data.candidates[0].content.parts[0];
+
+                // Controleer of de AI besluit de functie aan te roepen
+                if (part.functionCall) {
+                    const functionCall = part.functionCall;
+                    if (functionCall.name === "controlHardware") {
+                        const cmd = functionCall.args.command;
+                        
+                        // Voer de fysieke hardware actie uit
+                        const resultStatus = await sendToMicrocontroller(cmd);
+
+                        // Voeg de beslissing van de AI toe aan de chathistorie
+                        chatHistory.push({
+                            role: "model",
+                            parts: [{ functionCall: functionCall }]
+                        });
+
+                        // Voeg het resultaat van de hardware toe aan de historie zodat de AI dit weet
+                        chatHistory.push({
+                            role: "tool",
+                            parts: [{
+                                functionResponse: {
+                                    name: "controlHardware",
+                                    response: { result: resultStatus }
+                                }
+                            }]
+                        });
+
+                        // Maak direct een vervolg-aanroep zodat de AI zijn definitieve gesproken antwoord formuleert
+                        await askAI();
+                    }
+                } else if (part.text) {
+                    // Normaal tekst- of spraakantwoord afhandelen
+                    statusText.innerText = "Standby";
+                    appendChatMessage('model', part.text);
+                    speakBack(part.text);
+                }
 
             } catch (error) {
                 console.error(error);
                 statusText.innerText = "Fout";
-                appendMessage('system', 'Verbindingsfout');
+                appendSystemMessage('Verbindingsfout met AI core.');
             }
         }
 
@@ -341,10 +454,8 @@
             const cleanText = text.replace(/\*/g, '').substring(0, 250); 
             const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.lang = 'nl-NL';
-            
             utterance.onstart = () => { statusText.innerText = "Spreken..."; };
             utterance.onend = () => { statusText.innerText = "Standby"; };
-
             synth.speak(utterance);
         }
 
