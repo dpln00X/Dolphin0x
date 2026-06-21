@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dolphin0x | AI Assistant</title>
     <style>
-        /* Basic & Clean Stijl */
         body {
             margin: 0;
             padding: 0;
@@ -31,7 +30,6 @@
             overflow: hidden;
         }
 
-        /* Bovenbalk */
         .chat-header {
             padding: 15px 20px;
             background-color: #ffffff;
@@ -55,7 +53,6 @@
             border-radius: 20px;
         }
 
-        /* Chatvenster */
         .chat-log {
             flex-grow: 1;
             padding: 20px;
@@ -66,7 +63,6 @@
             gap: 12px;
         }
 
-        /* Berichten */
         .msg {
             max-width: 80%;
             padding: 10px 14px;
@@ -97,7 +93,6 @@
             font-size: 0.8rem;
         }
 
-        /* Inputbalk onderaan */
         .input-area {
             padding: 15px;
             background-color: #ffffff;
@@ -123,7 +118,6 @@
             background-color: #ffffff;
         }
 
-        /* Knoppen */
         .btn {
             height: 40px;
             border: none;
@@ -168,7 +162,6 @@
             background-color: #636366;
         }
 
-        /* Mobiele schermen */
         @media (max-width: 600px) {
             body { align-items: flex-start; }
             .chat-container { height: 100vh; border-radius: 0; border: none; }
@@ -191,15 +184,15 @@
         <div id="chatLog" class="chat-log"></div>
 
         <div class="input-area">
-            <button id="micBtn" class="btn btn-icon btn-mic" onclick="startVoiceInput()" title="Praat tegen de AI">🎙️</button>
-            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht of praat...">
+            <button id="micBtn" class="btn btn-icon btn-mic" onclick="startVoiceInput()">🎙️</button>
+            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht...">
             <button class="btn" onclick="processTextQuery()">Verstuur</button>
-            <button class="btn btn-icon btn-clear" onclick="clearHistory()" title="Wis gesprek">🗑️</button>
+            <button class="btn btn-icon btn-clear" onclick="clearHistory()">🗑️</button>
         </div>
     </div>
 
     <script>
-        let GEMINI_API_KEY = localStorage.getItem('dolphin_api_key') || "";
+        let apiKey = localStorage.getItem('dolphin_api_key') || "";
 
         const chatLog = document.getElementById('chatLog');
         const statusText = document.getElementById('statusText');
@@ -211,7 +204,6 @@
         const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = null;
 
-        // Spraakherkenning configureren (Luisteren)
         if (Recognition) {
             recognition = new Recognition();
             recognition.lang = 'nl-NL';
@@ -219,7 +211,7 @@
             recognition.maxAlternatives = 1;
 
             recognition.onstart = () => {
-                statusText.innerText = "Aan het luisteren...";
+                statusText.innerText = "Luisteren...";
                 micBtn.classList.add('listening');
             };
             recognition.onspeechend = () => {
@@ -230,16 +222,15 @@
                 statusText.innerText = "Standby";
             };
             recognition.onerror = () => {
-                statusText.innerText = "Microfoon fout";
-                appendMessage('system', '[Microfoon kon je niet horen of staat uit]');
+                statusText.innerText = "Fout";
+                appendMessage('system', 'Microfoonfout');
             };
             recognition.onresult = async (event) => {
-                const spraakResultaat = event.results[0][0].transcript;
-                textQueryInput.value = spraakResultaat;
+                textQueryInput.value = event.results[0][0].transcript;
                 await processTextQuery();
             };
         } else {
-            micBtn.style.display = 'none'; // Verberg microfoon als browser het niet snapt
+            micBtn.style.display = 'none';
         }
 
         window.onload = () => {
@@ -249,16 +240,16 @@
                 chatHistory = JSON.parse(savedChats);
                 renderChatLog();
             } else {
-                appendMessage('ai', 'Hallo! Ik ben je persoonlijke assistent. Je kunt gewoon tegen me typen, of op de groene microfoon klikken om te praten.');
+                appendMessage('ai', 'Systeem gereed.');
             }
         };
 
         function checkApiKey() {
-            if (!GEMINI_API_KEY) {
-                const userKey = prompt("Welkom! Plak hier je Gemini API Key om te starten:");
+            if (!apiKey) {
+                const userKey = prompt("Voer API Key in:");
                 if (userKey) {
-                    GEMINI_API_KEY = userKey.trim();
-                    localStorage.setItem('dolphin_api_key', GEMINI_API_KEY);
+                    apiKey = userKey.trim();
+                    localStorage.setItem('dolphin_api_key', apiKey);
                 }
             }
         }
@@ -287,23 +278,18 @@
         }
 
         function clearHistory() {
-            if (confirm("Gesprek wissen?")) {
+            if (confirm("Geschiedenis wissen?")) {
                 chatHistory = [];
                 localStorage.removeItem('dolphin_ai_history');
                 chatLog.innerHTML = '';
-                appendMessage('ai', 'Gesprek gewist. Waar kan ik je mee helpen?');
+                appendMessage('ai', 'Systeem gereset.');
                 if (synth.speaking) synth.cancel();
             }
         }
 
-        // Spraakfunctie starten (Praten tegen de bot)
         function startVoiceInput() {
-            if (synth.speaking) synth.cancel(); // Stop AI met praten als hij nog bezig was
-            if (recognition) {
-                recognition.start();
-            } else {
-                alert("Spraakherkenning werkt niet in deze browser. Gebruik Google Chrome of Edge.");
-            }
+            if (synth.speaking) synth.cancel();
+            if (recognition) recognition.start();
         }
 
         async function processTextQuery() {
@@ -312,12 +298,12 @@
             textQueryInput.value = '';
             
             appendMessage('user', query);
-            statusText.innerText = "Typen...";
+            statusText.innerText = "Verwerken...";
             await askAI();
         }
 
         async function askAI() {
-            if (!GEMINI_API_KEY) {
+            if (!apiKey) {
                 checkApiKey();
                 return;
             }
@@ -328,12 +314,12 @@
             }));
 
             try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         contents: apiContents,
-                        tools: [{ googleSearch: {} }] // Live internet functionaliteit blijft aan
+                        tools: [{ googleSearch: {} }]
                     })
                 });
 
@@ -342,23 +328,21 @@
                 
                 statusText.innerText = "Standby";
                 appendMessage('ai', aiResponseText);
-                speakBack(aiResponseText); // Laat de AI terugpraten
+                speakBack(aiResponseText);
 
             } catch (error) {
                 console.error(error);
                 statusText.innerText = "Fout";
-                appendMessage('system', '[Kon geen verbinding maken met de AI]');
+                appendMessage('system', 'Verbindingsfout');
             }
         }
 
-        // Hardop terugpraten functie (Bot praat terug)
         function speakBack(text) {
-            // Haal asterisken (*) weg voor een mooie vloeiende uitspraak en kap af op 250 tekens
             const cleanText = text.replace(/\*/g, '').substring(0, 250); 
             const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'nl-NL'; // Nederlandse stem
+            utterance.lang = 'nl-NL';
             
-            utterance.onstart = () => { statusText.innerText = "Spreekt..."; };
+            utterance.onstart = () => { statusText.innerText = "Spreken..."; };
             utterance.onend = () => { statusText.innerText = "Standby"; };
 
             synth.speak(utterance);
