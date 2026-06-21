@@ -3,461 +3,368 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dolphin0x | Ironclad Connected Suite</title>
+    <title>Dolphin0x | AI Assistant</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-        :root { 
-            --bg-deep: #09090b; 
-            --bg-glass: rgba(24, 24, 27, 0.95); 
-            --border-glass: rgba(255, 255, 255, 0.08);
-            --accent-gradient: linear-gradient(135deg, #2563eb, #06b6d4); 
-            --text-main: #f4f4f5; 
-            --text-muted: #a1a1aa;
+        /* Basic & Clean Stijl */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
         }
 
-        body { 
-            margin: 0; font-family: 'Inter', sans-serif; background: var(--bg-deep); color: var(--text-main);
-            height: 100vh; overflow: hidden; display: flex;
+        .chat-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
         }
 
-        /* --- Hoofd Lay-out --- */
-        #app-container { display: none; width: 100%; height: 100%; grid-template-columns: 320px 1fr; }
-        
-        .sidebar { background: var(--bg-glass); border-right: 1px solid var(--border-glass); display: flex; flex-direction: column; padding: 25px; gap: 15px; box-sizing: border-box; }
-        .sidebar-header { font-weight: 800; font-size: 1.7rem; background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px; }
-        
-        .section-title { font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-top: 15px; letter-spacing: 1.5px; padding-bottom: 5px; border-bottom: 1px solid var(--border-glass); }
-        .list-container { overflow-y: auto; display: flex; flex-direction: column; gap: 8px; flex-grow: 1; }
-        
-        /* Navigatie Knoppen & DM's */
-        .item-btn { padding: 12px 16px; border-radius: 14px; cursor: pointer; color: var(--text-muted); font-weight: 500; font-size: 1rem; transition: all 0.25s ease; display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); border: 1px solid transparent; }
-        .item-btn:hover { background: rgba(255,255,255,0.07); color: white; transform: translateX(4px); }
-        .item-btn.active { background: var(--accent-gradient); color: white; font-weight: 600; box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35); border: 1px solid rgba(255,255,255,0.15); transform: translateX(4px); }
-        .avatar-img { width: 32px; height: 32px; border-radius: 10px; object-fit: cover; background: #27272a; border: 1px solid var(--border-glass); }
+        /* Bovenbalk */
+        .chat-header {
+            padding: 15px 20px;
+            background-color: #ffffff;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* Profiel Widget */
-        .profile-widget { background: rgba(0, 0, 0, 0.4); padding: 15px; border-radius: 18px; display: flex; align-items: center; gap: 12px; border: 1px solid var(--border-glass); margin-top: auto; }
-        .profile-widget .info { flex-grow: 1; overflow: hidden; }
-        .profile-widget .name { font-weight: 600; font-size: 0.95rem; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-        .profile-widget .status { font-size: 0.75rem; color: #10b981; display: flex; align-items: center; gap: 4px; }
+        .chat-header h2 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #1a1a1a;
+        }
 
-        /* --- Chat Area --- */
-        .chat-area { display: flex; flex-direction: column; flex-grow: 1; position: relative; background: #0c0c0e; }
-        .chat-header { padding: 22px 30px; border-bottom: 1px solid var(--border-glass); display: flex; justify-content: space-between; align-items: center; background: rgba(18, 18, 20, 0.8); backdrop-filter: blur(20px); z-index: 10; }
-        .chat-header h3 { margin: 0; font-size: 1.35rem; font-weight: 700; }
-        
-        .msg-feed { flex-grow: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; background: radial-gradient(circle at 50% 10%, #161619 0%, #09090b 100%); }
-        .msg-container { max-width: 70%; display: flex; flex-direction: column; animation: slideIn 0.25s ease-out; }
-        .msg-container.me { align-self: flex-end; align-items: flex-end; }
-        .msg-container.other { align-self: flex-start; align-items: flex-start; }
-        
-        .bubble { padding: 14px 20px; border-radius: 22px; font-size: 1.05rem; line-height: 1.5; word-break: break-word; box-shadow: 0 4px 18px rgba(0,0,0,0.4); }
-        .me .bubble { background: var(--accent-gradient); color: white; border-bottom-right-radius: 4px; }
-        .other .bubble { background: #1f1f23; border: 1px solid var(--border-glass); border-bottom-left-radius: 4px; }
-        .msg-sender { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px; padding: 0 8px; font-weight: 600; }
-        
-        /* Media Weergave */
-        .media-chat { max-width: 100%; max-height: 320px; border-radius: 18px; margin-top: 6px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.1); object-fit: cover; }
+        #statusText {
+            font-size: 0.85rem;
+            color: #666;
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 20px;
+        }
 
-        /* --- GEOPTIMALISEERDE INTEGRALE CHATBALK --- */
-        .input-bar { padding: 25px 35px; background: rgba(9, 9, 11, 0.98); border-top: 1px solid var(--border-glass); display: flex; gap: 16px; align-items: center; backdrop-filter: blur(15px); }
-        
-        .media-upload-btn { background: #1f1f23; color: white; border: 1px solid var(--border-glass); width: 60px; height: 60px; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 1.6rem; cursor: pointer; transition: all 0.2s; flex-shrink: 0; box-sizing: border-box; }
-        .media-upload-btn:hover { background: #2d2d33; transform: scale(1.05); border-color: #3b82f6; }
+        /* Chatvenster */
+        .chat-log {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background-color: #f8f9fa;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
 
-        .input-bar input[type="text"] { flex-grow: 1; height: 60px; padding: 0 25px; border-radius: 18px; border: 1px solid var(--border-glass); background: #141416; color: white; outline: none; font-size: 1.1rem; transition: all 0.25s; box-sizing: border-box; }
-        .input-bar input[type="text"]:focus { border-color: #2563eb; box-shadow: 0 0 20px rgba(37, 99, 235, 0.25); background: #1c1c1f; }
-        
-        .send-btn { background: var(--accent-gradient); color: white; border: none; height: 60px; padding: 0 35px; border-radius: 18px; font-size: 1.1rem; font-weight: 700; cursor: pointer; transition: all 0.2s; flex-shrink: 0; box-shadow: 0 6px 20px rgba(37, 99, 235, 0.35); }
-        .send-btn:hover { filter: brightness(1.15); transform: translateY(-2px); }
+        /* Berichten */
+        .msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 18px;
+            font-size: 1rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
 
-        /* --- Knoppen & Systeem Overlays --- */
-        .btn { padding: 12px 22px; border-radius: 14px; border: none; cursor: pointer; font-weight: 600; color: white; transition: 0.2s; display: inline-flex; align-items: center; gap: 8px; font-size: 1rem; }
-        .btn-call { background: #10b981; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); }
-        .btn-call:hover { background: #059669; transform: translateY(-2px); }
-        .btn-icon { background: transparent; border: none; cursor: pointer; font-size: 1.2rem; padding: 8px; border-radius: 10px; transition: 0.2s; color: var(--text-muted); }
-        .btn-icon:hover { background: rgba(255,255,255,0.05); color: white; }
+        .msg.user {
+            align-self: flex-end;
+            background-color: #007aff;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
 
-        .auth-overlay { position: fixed; inset: 0; background: var(--bg-deep); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: #141416; padding: 45px; border-radius: 28px; width: 90%; max-width: 380px; text-align: center; border: 1px solid var(--border-glass); box-shadow: 0 25px 50px rgba(0,0,0,0.6); }
-        .auth-card input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 1px solid var(--border-glass); background: #09090b; color: white; box-sizing: border-box; font-size: 1rem; }
+        .msg.ai {
+            align-self: flex-start;
+            background-color: #e9e9eb;
+            color: #000000;
+            border-bottom-left-radius: 4px;
+        }
 
-        /* Live Video Bellen Overlay */
-        .call-overlay { position: fixed; inset: 0; background: rgba(5, 5, 6, 0.97); backdrop-filter: blur(30px); z-index: 9998; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; }
-        .video-grid { display: grid; grid-template-columns: 1fr; gap: 25px; width: 100%; max-width: 1100px; aspect-ratio: 16/9; margin-bottom: 35px; }
-        @media (min-width: 750px) { .video-grid { grid-template-columns: 1fr 1fr; } }
-        .video-box { background: #000; border-radius: 28px; border: 1px solid var(--border-glass); position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: 0 25px 55px rgba(0,0,0,0.6); }
-        .video-box video { width: 100%; height: 100%; object-fit: cover; }
-        .video-badge { position: absolute; bottom: 20px; left: 20px; background: rgba(0,0,0,0.7); padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.1); }
-        .call-controls { display: flex; gap: 20px; background: rgba(255,255,255,0.04); padding: 16px 35px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.08); }
+        .msg.system {
+            align-self: center;
+            background-color: transparent;
+            color: #8e8e93;
+            font-size: 0.8rem;
+        }
 
-        @keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+        /* Inputbalk onderaan */
+        .input-area {
+            padding: 15px;
+            background-color: #ffffff;
+            border-top: 1px solid #e0e0e0;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
 
-        /* Mobiele Optimalisatie Matrix */
-        @media (max-width: 768px) {
-            #app-container { display: flex; flex-direction: column; }
-            .sidebar { padding: 15px; flex-direction: row; flex-wrap: wrap; border-right: none; border-bottom: 1px solid var(--border-glass); max-height: 190px; gap: 10px; }
-            .sidebar-header { width: 100%; font-size: 1.4rem; margin: 0; }
-            .list-container { flex-direction: row; overflow-x: auto; width: 100%; padding-bottom: 5px; }
-            .item-btn { padding: 10px 16px; font-size: 0.95rem; white-space: nowrap; }
-            .section-title, .profile-widget { display: none; }
-            .chat-area { height: 0; }
-            .input-bar { padding: 16px; gap: 10px; }
-            .input-bar input[type="text"], .media-upload-btn, .send-btn { height: 50px; }
-            .input-bar input[type="text"] { font-size: 1rem; padding: 0 15px; }
-            .send-btn { padding: 0 20px; font-size: 1rem; }
-            .media-upload-btn { width: 50px; font-size: 1.3rem; }
+        .text-input {
+            flex-grow: 1;
+            height: 40px;
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 0 15px;
+            font-size: 1rem;
+            outline: none;
+            background-color: #f9f9f9;
+        }
+
+        .text-input:focus {
+            border-color: #007aff;
+            background-color: #ffffff;
+        }
+
+        /* Knoppen */
+        .btn {
+            height: 40px;
+            border: none;
+            border-radius: 20px;
+            padding: 0 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            background-color: #007aff;
+            color: white;
+            transition: background 0.1s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn-icon {
+            width: 40px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .btn-mic {
+            background-color: #34c759;
+        }
+        .btn-mic:hover {
+            background-color: #28a745;
+        }
+        .btn-mic.listening {
+            background-color: #ff3b30;
+            animation: blink 1s infinite alternate;
+        }
+
+        .btn-clear {
+            background-color: #8e8e93;
+        }
+        .btn-clear:hover {
+            background-color: #636366;
+        }
+
+        /* Mobiele schermen */
+        @media (max-width: 600px) {
+            body { align-items: flex-start; }
+            .chat-container { height: 100vh; border-radius: 0; border: none; }
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            100% { opacity: 0.6; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Auth Module Screen -->
-    <div id="authOverlay" class="auth-overlay">
-        <div class="auth-card">
-            <h1 class="sidebar-header" style="font-size: 2.8rem; margin: 0 0 5px 0;">Dolphin0x</h1>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 25px;">Secure Communication Engine</p>
-            
-            <input type="email" id="email" placeholder="E-mailadres">
-            <input type="password" id="pass" placeholder="Wachtwoord">
-            <button class="send-btn" style="width: 100%; margin-top: 15px; height: 52px;" onclick="authEmail(true)">Inloggen</button>
-            <button class="btn" style="width: 100%; margin-top: 10px; background: #1f1f23; height: 52px;" onclick="authEmail(false)">Account Aanmaken</button>
-            <hr style="border-color: rgba(255,255,255,0.08); margin: 20px 0;">
-            <button class="btn" style="width: 100%; background: white; color: black; justify-content: center; font-weight:700; height: 52px;" onclick="loginGoogle()">🌐 Inloggen met Google</button>
+    <div class="chat-container">
+        <div class="chat-header">
+            <h2>Dolphin0x AI</h2>
+            <span id="statusText">Standby</span>
+        </div>
+
+        <div id="chatLog" class="chat-log"></div>
+
+        <div class="input-area">
+            <button id="micBtn" class="btn btn-icon btn-mic" onclick="startVoiceInput()" title="Praat tegen de AI">🎙️</button>
+            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht of praat...">
+            <button class="btn" onclick="processTextQuery()">Verstuur</button>
+            <button class="btn btn-icon btn-clear" onclick="clearHistory()" title="Wis gesprek">🗑️</button>
         </div>
     </div>
 
-    <!-- WebRTC Live Call HUD -->
-    <div id="callOverlay" class="call-overlay">
-        <h2 style="margin-top: 0; font-weight: 800; font-size: 2.2rem; letter-spacing: -1px;">Dolphin0x Live Video</h2>
-        <div class="video-grid">
-            <div class="video-box">
-                <video id="localVideo" autoplay playsinline muted></video>
-                <div class="video-badge">Jij (Preview)</div>
-            </div>
-            <div class="video-box">
-                <video id="remoteVideo" autoplay playsinline></video>
-                <div class="video-badge" id="remoteStatus">Verbinding maken...</div>
-            </div>
-        </div>
-        <div class="call-controls">
-            <button id="btnToggleMic" class="btn" style="background: #27272a;" onclick="toggleMicrophone()">🎙️ Mic Dempen</button>
-            <button id="btnToggleCam" class="btn" style="background: #27272a;" onclick="toggleCamera()">📷 Cam Uitzetten</button>
-            <button class="btn" style="background: #ef4444; border-radius: 50px; padding: 12px 30px; font-weight:700;" onclick="hangUpCall()">🛑 Ophangen</button>
-        </div>
-    </div>
+    <script>
+        let GEMINI_API_KEY = localStorage.getItem('dolphin_api_key') || "";
 
-    <!-- Application Architecture Workspace -->
-    <div id="app-container">
-        <!-- Sidebar Workspace Navigation -->
-        <div class="sidebar">
-            <div class="sidebar-header">Dolphin0x</div>
-            
-            <div class="section-title">Publieke Groepen</div>
-            <div id="roomList" class="list-container" style="max-height: 22vh; flex-grow: 0;">
-                <div class="item-btn active" onclick="switchContext('room', 'global', this)">🌍 # global</div>
-                <div class="item-btn" onclick="switchContext('room', 'dev-talk', this)">💻 # dev-talk</div>
-            </div>
+        const chatLog = document.getElementById('chatLog');
+        const statusText = document.getElementById('statusText');
+        const textQueryInput = document.getElementById('textQuery');
+        const micBtn = document.getElementById('micBtn');
 
-            <div class="section-title">Direct Messages</div>
-            <div id="userList" class="list-container">
-                <!-- Real-time database synchronisatie -->
-            </div>
+        let chatHistory = [];
+        const synth = window.speechSynthesis;
+        const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        let recognition = null;
 
-            <!-- Profile Dashboard Panel -->
-            <div class="profile-widget">
-                <img id="myAvatar" class="avatar-img" src="" alt="Me">
-                <div class="info">
-                    <div id="myName" class="name">Laden...</div>
-                    <div class="status"><span style="width:6px; height:6px; background:#10b981; border-radius:50%;"></span>Online</div>
-                </div>
-                <button class="btn-icon" onclick="modifyProfile()" title="Profiel Aanpassen">⚙️</button>
-                <button class="btn-icon" onclick="logout()" title="Uitloggen" style="color:#ef4444; font-size:1rem;">🚪</button>
-            </div>
-        </div>
+        // Spraakherkenning configureren (Luisteren)
+        if (Recognition) {
+            recognition = new Recognition();
+            recognition.lang = 'nl-NL';
+            recognition.interimResults = false;
+            recognition.maxAlternatives = 1;
 
-        <!-- Central Chat Workspace -->
-        <div class="chat-area">
-            <div class="chat-header">
-                <h3 id="chatTitle">🌍 # global</h3>
-                <button id="btnCall" class="btn btn-call" onclick="initiateWebRtcCall()" style="display: none;">📞 Videobellen</button>
-            </div>
-            
-            <div id="msgFeed" class="msg-feed"></div>
-            
-            <!-- Structural High-Performance Input Console -->
-            <div class="input-bar">
-                <input type="file" id="mediaUpload" accept="image/*,video/*" style="display:none;" onchange="uploadFilePayload(this)">
-                <label for="mediaUpload" class="media-upload-btn" title="Foto of video selecteren">📸</label>
-                
-                <input type="text" id="msgInput" placeholder="Stuur een beveiligd bericht...">
-                <button class="send-btn" onclick="executeSendMessage()">Stuur 🚀</button>
-            </div>
-        </div>
-    </div>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, onSnapshot, query, where, doc, setDoc, deleteDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-        // Firebase Configuration Setup
-        const firebaseConfig = {
-            apiKey: "AIzaSyCZ0H4mGe6VLzLSb2ow877Xz6j684CwBGU",
-            authDomain: "dolphin0x.firebaseapp.com",
-            projectId: "dolphin0x",
-            storageBucket: "dolphin0x.firebasestorage.app",
-            messagingSenderId: "397971950369",
-            appId: "1:397971950369:web:06c65ad929479656a10c60"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-
-        let chatType = 'room', currentTarget = 'global', remoteUserUid = null, unsubscribeMessages = null;
-        let localStream = null, peerConnection = null, isMicEnabled = true, isCamEnabled = true, callUnsubscribe = null;
-        const rtcConfig = { iceServers: [{ urls: 'stun:stun.l.google.com:19302' }, { urls: 'stun:stun1.l.google.com:19302' }] };
-
-        // --- AUTH PIPELINE ---
-        window.authEmail = async (isLogin) => {
-            const e = document.getElementById('email').value, p = document.getElementById('pass').value;
-            if(!e || !p) return alert("Vul een geldig e-mailadres en wachtwoord in.");
-            try { 
-                isLogin ? await signInWithEmailAndPassword(auth, e, p) : await createUserWithEmailAndPassword(auth, e, p); 
-            } catch(err) { alert("Fout: " + err.message); }
-        };
-        window.loginGoogle = async () => { try { await signInWithPopup(auth, new GoogleAuthProvider()); } catch(e){ alert(e.message); } };
-        window.logout = () => signOut(auth).then(() => location.reload());
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                document.getElementById('authOverlay').style.display = 'none';
-                document.getElementById('app-container').style.display = window.innerWidth <= 768 ? 'flex' : 'grid';
-                
-                const defaultName = user.displayName || user.email?.split('@')[0] || "User_" + user.uid.substring(0,4);
-                const defaultAvatar = user.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${user.uid}`;
-                
-                try {
-                    await setDoc(doc(db, "users", user.uid), { name: defaultName, photoURL: defaultAvatar, uid: user.uid }, { merge: true });
-                } catch(e) { console.error("Gebruikersprofiel synchronisatie mislukt:", e); }
-                
-                syncProfileWidget();
-                listenUsersList(); 
-                syncMessageFeed(); 
-                listenIncomingCalls();
-            }
-        });
-
-        function syncProfileWidget() {
-            const u = auth.currentUser;
-            if(u) {
-                document.getElementById('myName').innerText = u.displayName || u.email?.split('@')[0] || "Gebruiker";
-                document.getElementById('myAvatar').src = u.photoURL || `https://api.dicebear.com/7.x/bottts/svg?seed=${u.uid}`;
-            }
-        }
-
-        window.modifyProfile = async () => {
-            const newName = prompt("Nieuwe weergavenaam:", auth.currentUser.displayName || "");
-            const newAvatar = prompt("Nieuwe Avatar URL (Laat leeg voor standaard):", auth.currentUser.photoURL || "");
-            if(newName || newAvatar) {
-                try {
-                    await updateProfile(auth.currentUser, {
-                        displayName: newName || auth.currentUser.displayName,
-                        photoURL: newAvatar || auth.currentUser.photoURL
-                    });
-                    await updateDoc(doc(db, "users", auth.currentUser.uid), {
-                        name: newName || auth.currentUser.displayName,
-                        photoURL: newAvatar || auth.currentUser.photoURL
-                    });
-                    syncProfileWidget();
-                } catch(e) { alert("Fout bij updaten profiel: " + e.message); }
-            }
-        };
-
-        // --- REAL-TIME DATA QUERY PIPELINE (GEFIXT) ---
-        function listenUsersList() {
-            onSnapshot(collection(db, "users"), (snap) => {
-                const list = document.getElementById('userList');
-                list.innerHTML = '';
-                snap.forEach(doc => {
-                    const data = doc.data();
-                    if(data.uid !== auth.currentUser.uid) {
-                        list.innerHTML += `
-                            <div class="item-btn" onclick="switchContext('private', '${data.uid}', this, '${data.name}')">
-                                <img src="${data.photoURL}" class="avatar-img">
-                                <span>${data.name}</span>
-                            </div>`;
-                    }
-                });
-            });
-        }
-
-        window.switchContext = (type, targetId, element, displayname = null) => {
-            document.querySelectorAll('.item-btn').forEach(b => b.classList.remove('active'));
-            element.classList.add('active');
-            chatType = type;
-            const callBtn = document.getElementById('btnCall');
-            if(type === 'room') {
-                currentTarget = targetId; remoteUserUid = null;
-                document.getElementById('chatTitle').innerHTML = "🌍 # " + targetId;
-                callBtn.style.display = 'none';
-            } else {
-                remoteUserUid = targetId;
-                currentTarget = [auth.currentUser.uid, targetId].sort().join('_');
-                document.getElementById('chatTitle').innerHTML = "🔒 " + displayname;
-                callBtn.style.display = 'block';
-            }
-            syncMessageFeed();
-        };
-
-        window.executeSendMessage = async () => {
-            const input = document.getElementById('msgInput');
-            if(!input.value.trim()) return;
-            await pushPayload(input.value, 'text');
-            input.value = '';
-        };
-
-        window.uploadFilePayload = (input) => {
-            const file = input.files[0];
-            if(!file) return;
-            if(file.size > 1048576) return alert("Fout: Bestand is groter dan 1MB. Firestore documenten weigeren dit.");
-            const type = file.type.startsWith('video') ? 'video' : 'image';
-            const reader = new FileReader();
-            reader.onload = async (e) => await pushPayload(e.target.result, type);
-            reader.readAsDataURL(file);
-        };
-
-        async function pushPayload(content, msgType) {
-            const path = chatType === 'room' ? "room_messages" : "private_messages";
-            try {
-                await addDoc(collection(db, path), {
-                    target: currentTarget,
-                    sender: auth.currentUser.displayName || auth.currentUser.email.split('@')[0],
-                    senderId: auth.currentUser.uid,
-                    text: content,
-                    type: msgType,
-                    createdAt: Date.now()
-                });
-            } catch(e) { alert("Kan bericht niet verzenden: " + e.message); }
-        }
-
-        // Gefixte Query: Haalt alléén de relevante chatdata op, niet de hele database!
-        function syncMessageFeed() {
-            if(unsubscribeMessages) unsubscribeMessages();
-            const path = chatType === 'room' ? "room_messages" : "private_messages";
-            
-            const q = query(collection(db, path), where("target", "==", currentTarget));
-            
-            unsubscribeMessages = onSnapshot(q, (snap) => {
-                const feed = document.getElementById('msgFeed');
-                let msgs = [];
-                snap.forEach(doc => msgs.push(doc.data()));
-                
-                // Sorteer lokaal op tijd om index-fouten in Firebase te omzeilen
-                msgs.sort((a,b) => a.createdAt - b.createdAt);
-                
-                feed.innerHTML = '';
-                msgs.forEach(data => {
-                    const isMe = data.senderId === auth.currentUser.uid;
-                    let body = `<div class="bubble">${data.text}</div>`;
-                    if(data.type === 'image') body = `<img src="${data.text}" class="media-chat">`;
-                    if(data.type === 'video') body = `<video src="${data.text}" controls class="media-chat"></video>`;
-                    feed.innerHTML += `<div class="msg-container ${isMe ? 'me' : 'other'}"><div class="msg-sender">${isMe ? 'Jij' : data.sender}</div>${body}</div>`;
-                });
-                setTimeout(() => feed.scrollTop = feed.scrollHeight, 40);
-            }, (error) => { console.error("Firestore sync error:", error); });
-        }
-
-        // --- CRITICAL WEB-RTC FIXED SIGNALING ---
-        window.initiateWebRtcCall = async () => {
-            if(!remoteUserUid) return;
-            document.getElementById('callOverlay').style.display = 'flex';
-            
-            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-            document.getElementById('localVideo').srcObject = localStream;
-            
-            peerConnection = new RTCPeerConnection(rtcConfig);
-            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-            peerConnection.ontrack = (e) => { 
-                document.getElementById('remoteVideo').srcObject = e.streams[0]; 
-                document.getElementById('remoteStatus').innerText = "Live Verbinding";
+            recognition.onstart = () => {
+                statusText.innerText = "Aan het luisteren...";
+                micBtn.classList.add('listening');
             };
-
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-
-            // Gecorrigeerd: Fast-Gathering safety loop om haperingen te voorkomen
-            await new Promise((resolve) => {
-                let count = 0;
-                peerConnection.onicecandidate = (e) => {
-                    if (!e.candidate || count++ > 2) resolve();
-                };
-                setTimeout(resolve, 500); // Fail-safe harde timeout na 500ms
-            });
-
-            await setDoc(doc(db, "calls", currentTarget), {
-                offer: JSON.stringify(peerConnection.localDescription), callerId: auth.currentUser.uid, calleeId: remoteUserUid, status: 'pending'
-            });
-
-            callUnsubscribe = onSnapshot(doc(db, "calls", currentTarget), (snap) => {
-                const d = snap.data();
-                if (d && d.answer && peerConnection.signalingState !== "stable") {
-                    peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(d.answer)));
-                }
-            });
-        };
-
-        function listenIncomingCalls() {
-            onSnapshot(collection(db, "calls"), (snap) => {
-                snap.forEach(async (docSnap) => {
-                    const d = docSnap.data();
-                    if(d.calleeId === auth.currentUser.uid && d.status === 'pending') {
-                        if(confirm("Inkomend videogesprek ontvangen! Opnemen?")) {
-                            document.getElementById('callOverlay').style.display = 'flex';
-                            localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
-                            document.getElementById('localVideo').srcObject = localStream;
-                            
-                            peerConnection = new RTCPeerConnection(rtcConfig);
-                            localStream.getTracks().forEach(t => peerConnection.addTrack(t, localStream));
-                            peerConnection.ontrack = (e) => { 
-                                document.getElementById('remoteVideo').srcObject = e.streams[0]; 
-                                document.getElementById('remoteStatus').innerText = "Live Verbinding";
-                            };
-                            
-                            await peerConnection.setRemoteDescription(new RTCSessionDescription(JSON.parse(d.offer)));
-                            const answer = await peerConnection.createAnswer();
-                            await peerConnection.setLocalDescription(answer);
-
-                            await new Promise((resolve) => {
-                                let count = 0;
-                                peerConnection.onicecandidate = (e) => { if (!e.candidate || count++ > 2) resolve(); };
-                                setTimeout(resolve, 500);
-                            });
-
-                            await setDoc(doc(db, "calls", docSnap.id), { answer: JSON.stringify(peerConnection.localDescription), status: 'active' }, { merge: true });
-                            callUnsubscribe = onSnapshot(doc(db, "calls", docSnap.id), (s) => { if(!s.exists()) hangUpCall(); });
-                        } else { await deleteDoc(doc(db, "calls", docSnap.id)); }
-                    }
-                });
-            });
+            recognition.onspeechend = () => {
+                recognition.stop();
+            };
+            recognition.onend = () => {
+                micBtn.classList.remove('listening');
+                statusText.innerText = "Standby";
+            };
+            recognition.onerror = () => {
+                statusText.innerText = "Microfoon fout";
+                appendMessage('system', '[Microfoon kon je niet horen of staat uit]');
+            };
+            recognition.onresult = async (event) => {
+                const spraakResultaat = event.results[0][0].transcript;
+                textQueryInput.value = spraakResultaat;
+                await processTextQuery();
+            };
+        } else {
+            micBtn.style.display = 'none'; // Verberg microfoon als browser het niet snapt
         }
 
-        window.toggleMicrophone = () => { isMicEnabled = !isMicEnabled; localStream.getAudioTracks().forEach(t => t.enabled = isMicEnabled); document.getElementById('btnToggleMic').innerText = isMicEnabled ? "🎙️ Mic Dempen" : "🚫 Mic Inschakelen"; };
-        window.toggleCamera = () => { isCamEnabled = !isCamEnabled; localStream.getVideoTracks().forEach(t => t.enabled = isCamEnabled); document.getElementById('btnToggleCam').innerText = isCamEnabled ? "📷 Cam Uitzetten" : "❌ Cam Aanzetten"; };
-        
-        window.hangUpCall = async () => {
-            if(callUnsubscribe) callUnsubscribe();
-            if(localStream) localStream.getTracks().forEach(t => t.stop());
-            if(peerConnection) peerConnection.close();
-            localStream = null; peerConnection = null;
-            try { await deleteDoc(doc(db, "calls", currentTarget)); } catch(e){}
-            document.getElementById('callOverlay').style.display = 'none';
-            document.getElementById('remoteStatus').innerText = "Verbinding maken...";
+        window.onload = () => {
+            checkApiKey();
+            const savedChats = localStorage.getItem('dolphin_ai_history');
+            if (savedChats) {
+                chatHistory = JSON.parse(savedChats);
+                renderChatLog();
+            } else {
+                appendMessage('ai', 'Hallo! Ik ben je persoonlijke assistent. Je kunt gewoon tegen me typen, of op de groene microfoon klikken om te praten.');
+            }
         };
 
-        document.getElementById('msgInput').addEventListener('keypress', e => { if(e.key === 'Enter') executeSendMessage(); });
+        function checkApiKey() {
+            if (!GEMINI_API_KEY) {
+                const userKey = prompt("Welkom! Plak hier je Gemini API Key om te starten:");
+                if (userKey) {
+                    GEMINI_API_KEY = userKey.trim();
+                    localStorage.setItem('dolphin_api_key', GEMINI_API_KEY);
+                }
+            }
+        }
+
+        function appendMessage(role, text) {
+            if (role !== 'system') {
+                chatHistory.push({ role, text });
+                localStorage.setItem('dolphin_ai_history', JSON.stringify(chatHistory));
+            }
+            const msgDiv = document.createElement('div');
+            msgDiv.className = `msg ${role}`;
+            msgDiv.innerText = text;
+            chatLog.appendChild(msgDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function renderChatLog() {
+            chatLog.innerHTML = '';
+            chatHistory.forEach(msg => {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = `msg ${msg.role}`;
+                msgDiv.innerText = msg.text;
+                chatLog.appendChild(msgDiv);
+            });
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        function clearHistory() {
+            if (confirm("Gesprek wissen?")) {
+                chatHistory = [];
+                localStorage.removeItem('dolphin_ai_history');
+                chatLog.innerHTML = '';
+                appendMessage('ai', 'Gesprek gewist. Waar kan ik je mee helpen?');
+                if (synth.speaking) synth.cancel();
+            }
+        }
+
+        // Spraakfunctie starten (Praten tegen de bot)
+        function startVoiceInput() {
+            if (synth.speaking) synth.cancel(); // Stop AI met praten als hij nog bezig was
+            if (recognition) {
+                recognition.start();
+            } else {
+                alert("Spraakherkenning werkt niet in deze browser. Gebruik Google Chrome of Edge.");
+            }
+        }
+
+        async function processTextQuery() {
+            const query = textQueryInput.value.trim();
+            if (!query) return;
+            textQueryInput.value = '';
+            
+            appendMessage('user', query);
+            statusText.innerText = "Typen...";
+            await askAI();
+        }
+
+        async function askAI() {
+            if (!GEMINI_API_KEY) {
+                checkApiKey();
+                return;
+            }
+
+            const apiContents = chatHistory.map(msg => ({
+                role: msg.role === 'user' ? 'user' : 'model',
+                parts: [{ text: msg.text }]
+            }));
+
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        contents: apiContents,
+                        tools: [{ googleSearch: {} }] // Live internet functionaliteit blijft aan
+                    })
+                });
+
+                const data = await response.json();
+                let aiResponseText = data.candidates[0].content.parts[0].text;
+                
+                statusText.innerText = "Standby";
+                appendMessage('ai', aiResponseText);
+                speakBack(aiResponseText); // Laat de AI terugpraten
+
+            } catch (error) {
+                console.error(error);
+                statusText.innerText = "Fout";
+                appendMessage('system', '[Kon geen verbinding maken met de AI]');
+            }
+        }
+
+        // Hardop terugpraten functie (Bot praat terug)
+        function speakBack(text) {
+            // Haal asterisken (*) weg voor een mooie vloeiende uitspraak en kap af op 250 tekens
+            const cleanText = text.replace(/\*/g, '').substring(0, 250); 
+            const utterance = new SpeechSynthesisUtterance(cleanText);
+            utterance.lang = 'nl-NL'; // Nederlandse stem
+            
+            utterance.onstart = () => { statusText.innerText = "Spreekt..."; };
+            utterance.onend = () => { statusText.innerText = "Standby"; };
+
+            synth.speak(utterance);
+        }
+
+        textQueryInput.addEventListener('keypress', e => { if(e.key === 'Enter') processTextQuery(); });
     </script>
 </body>
 </html>
