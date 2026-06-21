@@ -216,6 +216,8 @@
 
     <script>
         let apiKey = localStorage.getItem('dolphin_api_key') || "";
+        let serialPort = null;
+        let serialWriter = null;
 
         const chatLog = document.getElementById('chatLog');
         const statusText = document.getElementById('statusText');
@@ -262,7 +264,12 @@
                 chatHistory = JSON.parse(savedChats);
                 renderChatLog();
             } else {
-                appendChatMessage('model', 'Systeem gereed. Gebruik een pc om microcontrollers via USB te koppelen.');
+                // BUGFIX: Alleen visueel tonen, NIET in chatHistory array pushen! 
+                // Gemini eist dat de geschiedenis ALTIJD met een 'user' turn begint.
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'msg ai';
+                msgDiv.innerText = 'Systeem gereed. Gebruik een pc om microcontrollers via USB te koppelen.';
+                chatLog.appendChild(msgDiv);
             }
         };
 
@@ -318,7 +325,10 @@
 
         function appendChatMessage(role, text) {
             chatHistory.push({ role, parts: [{ text }] });
-            localStorage.setItem('dolphin_ai_history', JSON.stringify(chatHistory.filter(m => m.role !== 'tool')));
+            
+            // Sla alleen pure tekstberichten op om syntax-fouten bij herladen te voorkomen
+            const cleanHistory = chatHistory.filter(m => m.parts && m.parts[0] && m.parts[0].text);
+            localStorage.setItem('dolphin_ai_history', JSON.stringify(cleanHistory));
             
             const msgDiv = document.createElement('div');
             msgDiv.className = `msg ${role === 'user' ? 'user' : 'ai'}`;
@@ -349,12 +359,12 @@
         }
 
         function clearHistory() {
-            if (confirm("Volledige reset uitvoeren? (Wist ook de opgeslagen API-key)")) {
+            if (confirm("Volledige reset uitvoeren? (Wist chat én API-key)")) {
                 chatHistory = [];
                 localStorage.removeItem('dolphin_ai_history');
                 resetApiKey();
                 chatLog.innerHTML = '';
-                appendChatMessage('model', 'Systeem herstart. Voer zo direct je nieuwe key in.');
+                appendSystemMessage('Systeem gereset. Voer zo direct je key opnieuw in.');
                 checkApiKey();
             }
         }
@@ -410,11 +420,18 @@
 
                 const data = await response.json();
                 
-                // Als Google een error-object teruggeeft of candidates mist, is de key fout
-                if (data.error || !data.candidates || data.candidates.length === 0) {
-                    let errMsg = data.error ? data.error.message : "Ongeldige sleutel";
-                    appendSystemMessage(`API Fout: ${errMsg}. Je opgeslagen Key is nu automatisch gewist.`);
-                    resetApiKey();
+                // BUGFIX: Controleer specifiek of Google zegt dat de KEY fout is.
+                if (data.error) {
+                    let errMsg = data.error.message;
+                    if (data.error.status === "INVALID_ARGUMENT" || data.error.code === 400) {
+                        if (errMsg.toLowerCase().includes("key")) {
+                            appendSystemMessage(`API Sleutel Fout: ${errMsg}. Je opgeslagen Key is gewist.`);
+                            resetApiKey();
+                            statusText.innerText = "Standby";
+                            return;
+                        }
+                    }
+                    appendSystemMessage(`API Fout (${data.error.code}): ${errMsg}`);
                     statusText.innerText = "Standby";
                     return;
                 }
@@ -432,8 +449,9 @@
                             parts: [{ functionCall: functionCall }]
                         });
 
+                        // BUGFIX: Moet role: "function" zijn voor Gemini, niet "tool"!
                         chatHistory.push({
-                            role: "tool",
+                            role: "function",
                             parts: [{
                                 functionResponse: {
                                     name: "controlHardware",
@@ -453,7 +471,7 @@
             } catch (error) {
                 console.error(error);
                 statusText.innerText = "Fout";
-                appendSystemMessage('Netwerkfout. Controleer je internet of API Key.');
+                appendSystemMessage('Netwerkfout. Controleer je internetverbinding.');
             }
         }
 
