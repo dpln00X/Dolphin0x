@@ -99,6 +99,7 @@
             border: 1px solid #ffeeba;
             font-size: 0.85rem;
             border-radius: 8px;
+            padding: 6px 10px;
         }
 
         .input-area {
@@ -206,16 +207,15 @@
 
         <div class="input-area">
             <button id="micBtn" class="btn btn-icon btn-mic" onclick="startVoiceInput()">🎙️</button>
-            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht of geef een hardware commando...">
+            <input type="text" id="textQuery" class="text-input" placeholder="Typ een bericht of praat...">
             <button class="btn" onclick="processTextQuery()">Verstuur</button>
             <button class="btn btn-icon btn-clear" onclick="clearHistory()">🗑️</button>
         </div>
     </div>
 
     <script>
+        // LAAT DIT LEEG! De website vraagt zelf om de key via een pop-up.
         let apiKey = localStorage.getItem('dolphin_api_key') || "";
-        let serialPort = null;
-        let serialWriter = null;
 
         const chatLog = document.getElementById('chatLog');
         const statusText = document.getElementById('statusText');
@@ -245,7 +245,7 @@
             };
             recognition.onerror = () => {
                 statusText.innerText = "Fout";
-                appendSystemMessage('Microfoonfout of geen gehoor.');
+                appendSystemMessage('Microfoon kon je niet horen.');
             };
             recognition.onresult = async (event) => {
                 textQueryInput.value = event.results[0][0].transcript;
@@ -262,13 +262,13 @@
                 chatHistory = JSON.parse(savedChats);
                 renderChatLog();
             } else {
-                appendChatMessage('model', 'Systeem gereed. Sluit je microcontroller aan via de paarse knop bovenaan om hardware aan te sturen.');
+                appendChatMessage('model', 'Systeem gereed. Gebruik een pc om microcontrollers via USB te koppelen.');
             }
         };
 
         function checkApiKey() {
             if (!apiKey) {
-                const userKey = prompt("Voer Gemini API Key in:");
+                const userKey = prompt("Voer je Gemini API Key in:");
                 if (userKey) {
                     apiKey = userKey.trim();
                     localStorage.setItem('dolphin_api_key', apiKey);
@@ -276,7 +276,6 @@
             }
         }
 
-        // Web Serial API verbinding opzetten
         async function connectHardware() {
             if ('serial' in navigator) {
                 try {
@@ -286,26 +285,25 @@
                     
                     connectBtn.innerText = "⚡ Verbonden";
                     connectBtn.classList.add('connected');
-                    appendSystemMessage('Succesvol verbonden met microcontroller.');
+                    appendSystemMessage('Microcontroller succesvol verbonden via USB.');
                 } catch (error) {
                     console.error(error);
-                    appendSystemMessage('Verbinding met microcontroller afgebroken.');
+                    appendSystemMessage('Verbinding met MCU geweigerd.');
                 }
             } else {
-                alert("Je browser ondersteunt geen Web Serial API. Gebruik Google Chrome of Edge op een pc/laptop.");
+                alert("Web Serial werkt niet op telefoons. Open deze site op een PC of Laptop in Chrome/Edge.");
             }
         }
 
-        // Commando's fysiek over de seriele poort sturen
         async function sendToMicrocontroller(command) {
             if (!serialWriter) {
-                appendSystemMessage('Actie mislukt: Geen microcontroller verbonden via USB.');
+                appendSystemMessage('Hardware-actie overgeslagen: Geen MCU verbonden.');
                 return "Error: No device connected";
             }
             try {
                 const encoder = new TextEncoder();
                 await serialWriter.write(encoder.encode(command + "\n"));
-                appendSystemMessage(`Hardware commando verzonden: ${command}`);
+                appendSystemMessage(`Signaal verzonden: ${command}`);
                 return "Success";
             } catch (error) {
                 console.error(error);
@@ -346,11 +344,11 @@
         }
 
         function clearHistory() {
-            if (confirm("Geschiedenis wissen?")) {
+            if (confirm("Resetten?")) {
                 chatHistory = [];
                 localStorage.removeItem('dolphin_ai_history');
                 chatLog.innerHTML = '';
-                appendChatMessage('model', 'Systeem gereset.');
+                appendChatMessage('model', 'Systeem herstart.');
                 if (synth.speaking) synth.cancel();
             }
         }
@@ -373,20 +371,20 @@
         async function askAI() {
             if (!apiKey) {
                 checkApiKey();
+                statusText.innerText = "Standby";
                 return;
             }
 
-            // Definieer de hardware-functie die de AI kan aanroepen
             const hardwareTool = {
                 functionDeclarations: [{
                     name: "controlHardware",
-                    description: "Stuurt een specifiek commando naar de aangesloten microcontroller om componenten (zoals leds, motoren of relais) te schakelen.",
+                    description: "Stuurt een commando naar de microcontroller om pinnen te schakelen.",
                     parameters: {
                         type: "OBJECT",
                         properties: {
                             command: {
                                 type: "STRING",
-                                description: "Het exacte commando-woord (bijv. 'LED_ON', 'LED_OFF', 'SERVO_OPEN')."
+                                description: "Het commando (bijv. 'LED_ON', 'LED_OFF')."
                             }
                         },
                         required: ["command"]
@@ -405,24 +403,26 @@
                 });
 
                 const data = await response.json();
+                
+                if (!data.candidates || data.candidates.length === 0) {
+                    appendSystemMessage('API Fout: Je API-key is waarschijnlijk ongeldig. Wis je geschiedenis of herstart om een nieuwe in te voeren.');
+                    statusText.innerText = "Standby";
+                    return;
+                }
+
                 const part = data.candidates[0].content.parts[0];
 
-                // Controleer of de AI besluit de functie aan te roepen
                 if (part.functionCall) {
                     const functionCall = part.functionCall;
                     if (functionCall.name === "controlHardware") {
                         const cmd = functionCall.args.command;
-                        
-                        // Voer de fysieke hardware actie uit
                         const resultStatus = await sendToMicrocontroller(cmd);
 
-                        // Voeg de beslissing van de AI toe aan de chathistorie
                         chatHistory.push({
                             role: "model",
                             parts: [{ functionCall: functionCall }]
                         });
 
-                        // Voeg het resultaat van de hardware toe aan de historie zodat de AI dit weet
                         chatHistory.push({
                             role: "tool",
                             parts: [{
@@ -433,11 +433,9 @@
                             }]
                         });
 
-                        // Maak direct een vervolg-aanroep zodat de AI zijn definitieve gesproken antwoord formuleert
                         await askAI();
                     }
                 } else if (part.text) {
-                    // Normaal tekst- of spraakantwoord afhandelen
                     statusText.innerText = "Standby";
                     appendChatMessage('model', part.text);
                     speakBack(part.text);
@@ -446,7 +444,7 @@
             } catch (error) {
                 console.error(error);
                 statusText.innerText = "Fout";
-                appendSystemMessage('Verbindingsfout met AI core.');
+                appendSystemMessage('Netwerkfout bij het verbinden met AI Core.');
             }
         }
 
