@@ -228,7 +228,9 @@
     </div>
 
     <script>
-        let apiKey = localStorage.getItem('dolphin_api_key') || "";
+        // Jouw Gemini API-Sleutel staat hier nu vast ingebouwd
+        const apiKey = "AQ.Ab8RN6KFd0Tv_of32R3_TK-sN1Li5evv0EM-2Lp5cF4JK8splg";
+        
         let serialPort = null;
         let serialWriter = null;
 
@@ -271,7 +273,6 @@
         }
 
         window.onload = () => {
-            checkApiKey();
             const savedChats = localStorage.getItem('dolphin_ai_history');
             if (savedChats) {
                 try {
@@ -279,6 +280,7 @@
                     renderChatLog();
                 } catch(e) {
                     chatHistory = [];
+                    showWelcomeMessage();
                 }
             } else {
                 showWelcomeMessage();
@@ -290,21 +292,6 @@
             msgDiv.className = 'msg ai';
             msgDiv.innerText = 'Systeem gereed. Gebruik een pc om microcontrollers via USB te koppelen.';
             chatLog.appendChild(msgDiv);
-        }
-
-        function checkApiKey() {
-            if (!apiKey) {
-                const userKey = prompt("Voer je Gemini API Key in:");
-                if (userKey) {
-                    apiKey = userKey.trim();
-                    localStorage.setItem('dolphin_api_key', apiKey);
-                }
-            }
-        }
-
-        function resetApiKey() {
-            localStorage.removeItem('dolphin_api_key');
-            apiKey = "";
         }
 
         async function connectHardware() {
@@ -345,7 +332,6 @@
         function appendChatMessage(role, text) {
             chatHistory.push({ role, parts: [{ text }] });
             
-            // Sla alleen schone chat op om corruptie te voorkomen
             const cleanHistory = chatHistory.filter(m => m.parts && m.parts[0] && m.parts[0].text);
             localStorage.setItem('dolphin_ai_history', JSON.stringify(cleanHistory));
             
@@ -387,14 +373,12 @@
         }
 
         function clearHistory() {
-            if (confirm("Volledige reset uitvoeren? (Wist chat én API-key)")) {
+            if (confirm("Wil je de chatgeschiedenis wissen?")) {
                 chatHistory = [];
                 localStorage.removeItem('dolphin_ai_history');
-                resetApiKey();
                 chatLog.innerHTML = '';
                 showWelcomeMessage();
-                appendSystemMessage('Geheugen gewist. Voer je key opnieuw in.');
-                checkApiKey();
+                appendSystemMessage('Chatgeschiedenis gewist.');
             }
         }
 
@@ -414,12 +398,6 @@
         }
 
         async function askAI() {
-            if (!apiKey) {
-                checkApiKey();
-                statusText.innerText = "Standby";
-                return;
-            }
-
             const hardwareTool = {
                 functionDeclarations: [{
                     name: "controlHardware",
@@ -449,7 +427,6 @@
 
                 const data = await response.json();
                 
-                // LIVE DEBUGGING: Als Google een error teruggeeft, print hem direct op het scherm!
                 if (data.error) {
                     appendDebugError(`Google API Fout (${data.error.code})`, data.error.message);
                     statusText.innerText = "Standby";
@@ -457,7 +434,7 @@
                 }
 
                 if (!data.candidates || data.candidates.length === 0) {
-                    appendDebugError("Geen antwoord ontvangen", "Google stuurde een leeg resultaat terug zonder duidelijke reden.");
+                    appendDebugError("Geen antwoord", "Google stuurde een leeg resultaat terug.");
                     statusText.innerText = "Standby";
                     return;
                 }
@@ -496,7 +473,7 @@
             } catch (error) {
                 console.error(error);
                 statusText.innerText = "Fout";
-                appendDebugError("Netwerk / JavaScript Crash", error.message);
+                appendDebugError("Netwerk / Crash", error.message);
             }
         }
 
