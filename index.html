@@ -1,72 +1,57 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Ava AI Voice Chatbot</title>
-  <link rel="stylesheet" href="styles.css" />
-</head>
-<body>
-  <main class="app">
-    <header>
-      <div>
-        <h1>Ava AI Voice Chatbot</h1>
-        <p class="subtitle">Talk by typing or using your microphone. Ava answers with text and a real computer voice. You can also connect an Arduino, ESP32, or other serial microcontroller.</p>
-      </div>
-      <div id="status" class="status-pill">Starting...</div>
-    </header>
+``js
+// server.js
+const express = require("express");
+const session = require("express-session");
+const multer = require("multer");
+const bcrypt = require("bcrypt");
+const path = require("path");
+const fs = require("fs");
+const Database = require("better-sqlite3");
 
-    <section class="grid">
-      <div class="card chat-card">
-        <div id="chatLog" class="chat-log"></div>
-        <div class="controls">
-          <div class="input-row">
-            <textarea id="messageInput" placeholder="Type a message, or press Start Talking..."></textarea>
-            <button id="sendBtn">Send</button>
-          </div>
-          <div class="button-row">
-            <button id="talkBtn" class="secondary">🎙️ Start Talking</button>
-            <button id="stopTalkBtn" class="secondary">Stop Listening</button>
-            <button id="muteBtn" class="secondary">🔊 Voice On</button>
-            <select id="voiceSelect" title="Voice"></select>
-          </div>
-        </div>
-      </div>
+const app = express();
+const db = new Database("database.sqlite");
 
-      <aside class="side">
-        <div class="card panel">
-          <h2>Voice Settings</h2>
-          <p class="small">Microphone input works in Chrome/Edge using the browser Speech Recognition API. Spoken answers use your system/browser voices.</p>
-          <label class="small" for="rateRange">Voice speed</label>
-          <input id="rateRange" type="range" min="0.6" max="1.4" step="0.1" value="1" />
-        </div>
+db.exec(`
+CREATE TABLE IF NOT EXISTS users (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+username TEXT UNIQUE,
+password_hash TEXT
+);
 
-        <div class="card panel">
-          <h2>Microcontroller</h2>
-          <p id="serialStatus" class="small">Checking serial status...</p>
-          <div class="serial-row">
-            <input id="serialPort" placeholder="Serial port, e.g. COM3 or /dev/ttyUSB0" />
-            <input id="serialBaud" value="9600" inputmode="numeric" />
-          </div>
-          <div class="button-row" style="margin-top:10px;">
-            <button id="connectSerialBtn" class="secondary">Connect</button>
-            <button id="refreshSerialBtn" class="secondary">Refresh</button>
-          </div>
-          <div class="serial-row" style="margin-top:10px;">
-            <input id="serialCommand" placeholder="Command, e.g. LED_ON" />
-            <button id="sendSerialBtn">Send</button>
-          </div>
-          <pre id="serialLog" class="serial-log"></pre>
-        </div>
+CREATE TABLE IF NOT EXISTS posts (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+title TEXT,
+content TEXT,
+image_path TEXT,
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+);
 
-        <div class="card panel">
-          <h2>Example Commands</h2>
-          <p class="small">Try: “Explain photosynthesis simply.” “Write Arduino code to blink an LED.” “Send LED_ON to the microcontroller.” For physical control, connect your board and type the exact command in the microcontroller box.</p>
-        </div>
-      </aside>
-    </section>
-  </main>
+CREATE TABLE IF NOT EXISTS comments (
+id INTEGER PRIMARY KEY AUTOINCREMENT,
+post_id INTEGER,
+content TEXT,
+created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+FOREIGN KEY(post_id) REFERENCES posts(id)
+);
+`);
 
-  <script src="app.js"></script>
-</body>
-</html>
+// Special admin login (alleen dit kan posten)
+const ADMIN_USER = "specialAdmin";
+const ADMIN_PASS = "admin123"; // <-- wijzig dit
+
+const existing = db.prepare("SELECT * FROM users WHERE username=?").get(ADMIN_USER);
+if (!existing) {
+const hash = bcrypt.hashSync(ADMIN_PASS, 10);
+db.prepare("INSERT INTO users (username, password_hash) VALUES (?,?)").run(ADMIN_USER, hash);
+}
+
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+app.use(
+session({
+secret: "maak-een-stevige-secret",
+resave: false,
+saveUninitialized: false,
+})
+);
