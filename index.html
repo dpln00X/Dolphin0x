@@ -3,97 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dolphin0x | Fixed iPad AI</title>
+    <title>Dolphin0x | Super AI</title>
+    <!-- De gratis, sleutelloze AI-motor -->
     <script src="https://js.puter.com/v2/"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-        body { margin: 0; padding: 0; background-color: #0f172a; color: #e2e8f0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        body { margin: 0; padding: 0; background-color: #0b1120; color: #f8fafc; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
-        .chat-container { width: 100%; max-width: 750px; height: 95vh; background-color: #1e293b; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden; border: 1px solid #334155; }
+        .chat-container { width: 100%; max-width: 750px; height: 95vh; background: linear-gradient(145deg, #1e293b, #0f172a); border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 15px 35px rgba(0,0,0,0.6); overflow: hidden; border: 1px solid #334155; }
         
         /* Schermen */
         .screen { display: none; flex-direction: column; height: 100%; width: 100%; }
         .screen.active { display: flex; }
 
         /* Activatie Scherm */
-        .auth-screen { justify-content: center; align-items: center; padding: 40px; text-align: center; background-color: #0f172a; }
-        .auth-card { background: #1e293b; padding: 30px; border-radius: 20px; border: 1px solid #334155; max-width: 450px; }
-        .auth-card h1 { color: #38bdf8; margin-top: 0; }
-        .btn-activate { background-color: #a855f7; color: white; padding: 16px 32px; font-size: 1.1rem; border-radius: 30px; border: none; font-weight: 700; cursor: pointer; margin-top: 20px; width: 100%; box-shadow: 0 4px 14px rgba(168, 85, 247, 0.4); }
+        .auth-screen { justify-content: center; align-items: center; padding: 40px; text-align: center; }
+        .auth-card { background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); padding: 40px; border-radius: 24px; border: 1px solid #475569; max-width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
+        .auth-card h1 { color: #38bdf8; margin-top: 0; font-size: 2rem; }
+        .btn-activate { background: linear-gradient(135deg, #8b5cf6, #3b82f6); color: white; padding: 18px 36px; font-size: 1.2rem; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; margin-top: 25px; width: 100%; box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4); transition: transform 0.2s; }
+        .btn-activate:active { transform: scale(0.95); }
 
         /* Chat Scherm */
-        .chat-header { padding: 16px 20px; background-color: #0f172a; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h2 { margin: 0; font-size: 1.3rem; color: #38bdf8; font-weight: 700; }
+        .chat-header { padding: 18px 24px; background-color: rgba(15, 23, 42, 0.9); border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+        .chat-header h2 { margin: 0; font-size: 1.4rem; background: linear-gradient(to right, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
         
         .controls { display: flex; align-items: center; gap: 15px; }
-        .toggle-container { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; color: #94a3b8; }
+        .toggle-container { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; color: #94a3b8; }
         
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch { position: relative; display: inline-block; width: 48px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .3s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .3s; border-radius: 26px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
         input:checked + .slider { background-color: #38bdf8; }
-        input:checked + .slider:before { transform: translateX(20px); }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        #status { font-size: 0.85rem; color: #e2e8f0; background: #334155; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
-        .chat-log { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background-color: #0f172a; }
+        .chat-log { flex-grow: 1; padding: 25px; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; scroll-behavior: smooth; }
         
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 18px; line-height: 1.6; font-size: 1rem; white-space: pre-line; }
-        .msg.user { align-self: flex-end; background-color: #38bdf8; color: #0f172a; font-weight: 500; border-bottom-right-radius: 4px; }
-        .msg.ai { align-self: flex-start; background-color: #1e293b; color: #e2e8f0; border-bottom-left-radius: 4px; border: 1px solid #334155; }
-        .msg.system { align-self: center; background-color: #334155; color: #cbd5e1; font-size: 0.85rem; border-radius: 10px; padding: 6px 14px; text-align: center; }
+        .msg { max-width: 85%; padding: 16px 20px; border-radius: 20px; line-height: 1.6; font-size: 1.05rem; }
+        .msg strong { color: #fff; font-weight: 700; }
+        .msg.user { align-self: flex-end; background: linear-gradient(135deg, #0ea5e9, #2563eb); color: white; font-weight: 500; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(14, 165, 233, 0.2); }
+        .msg.ai { align-self: flex-start; background-color: #1e293b; color: #e2e8f0; border-bottom-left-radius: 4px; border: 1px solid #334155; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .msg.system { align-self: center; background-color: #334155; color: #cbd5e1; font-size: 0.85rem; border-radius: 12px; padding: 8px 16px; text-align: center; }
 
-        .input-area { padding: 20px; background-color: #1e293b; display: flex; gap: 12px; border-top: 1px solid #334155; align-items: center; }
-        .text-input { flex-grow: 1; background-color: #0f172a; border: 1px solid #334155; border-radius: 30px; padding: 0 20px; color: white; font-size: 1rem; height: 48px; outline: none; }
-        .text-input:focus { border-color: #38bdf8; }
+        /* Typ-animatie */
+        .typing-indicator { display: none; align-items: center; gap: 6px; padding: 16px 20px; background-color: #1e293b; border-radius: 20px; border-bottom-left-radius: 4px; border: 1px solid #334155; width: fit-content; align-self: flex-start; }
+        .typing-indicator.active { display: flex; }
+        .dot { width: 8px; height: 8px; background-color: #38bdf8; border-radius: 50%; animation: bounce 1.4s infinite ease-in-out both; }
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+
+        .input-area { padding: 20px; background-color: rgba(15, 23, 42, 0.9); display: flex; gap: 12px; border-top: 1px solid #334155; align-items: center; backdrop-filter: blur(10px); }
+        .text-input { flex-grow: 1; background-color: #0f172a; border: 1px solid #334155; border-radius: 30px; padding: 0 24px; color: white; font-size: 1.05rem; height: 52px; outline: none; transition: border-color 0.2s; }
+        .text-input:focus { border-color: #38bdf8; box-shadow: 0 0 10px rgba(56, 189, 248, 0.2); }
         
-        .btn { height: 44px; padding: 0 20px; border: none; border-radius: 22px; font-weight: 600; cursor: pointer; transition: all 0.2s; font-size: 0.95rem; }
+        .btn { height: 52px; padding: 0 24px; border: none; border-radius: 26px; font-weight: bold; cursor: pointer; transition: all 0.2s; font-size: 1rem; }
         .btn-send { background-color: #38bdf8; color: #0f172a; }
-        .btn-clear { background-color: #475569; color: white; }
-        .btn-mic { width: 48px; height: 48px; border-radius: 50%; background-color: #22c55e; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; border: none; cursor: pointer; padding: 0; }
-        .btn-mic.listening { background-color: #ef4444; animation: pulse 1s infinite alternate; }
+        .btn-send:active { transform: scale(0.95); }
+        .btn-mic { width: 52px; height: 52px; border-radius: 50%; background-color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; border: none; cursor: pointer; padding: 0; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3); }
+        .btn-mic.listening { background-color: #ef4444; animation: pulse 1s infinite alternate; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.5); }
 
-        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.08); } }
+        @keyframes pulse { 0% { transform: scale(1); } 100% { transform: scale(1.1); } }
     </style>
 </head>
 <body>
 
     <div class="chat-container">
+        <!-- SCHERM 1: VEILIGE ACTIVATIE -->
         <div id="authScreen" class="screen active">
             <div class="auth-card">
-                <h1>Dolphin0x AI</h1>
-                <p>Om echte AI-antwoorden te krijgen op je iPad zonder sleutels, moeten we de verbinding éénmalig veilig opstarten.</p>
-                <p><em>Klik hieronder en sta de pop-up toe als je iPad erom vraagt!</em></p>
-                <button class="btn-activate" onclick="activateAI()">🚀 Activeer Echte AI</button>
+                <h1>Dolphin0x Core</h1>
+                <p>Klaar voor de slimste AI op je iPad? Start de neural-engine en activeer stembediening.</p>
+                <button class="btn-activate" onclick="activateAI()">⚡ Systeem Opstarten</button>
             </div>
         </div>
 
+        <!-- SCHERM 2: CHAT INTERFACE -->
         <div id="chatScreen" class="screen">
             <div class="chat-header">
-                <h2>Dolphin0x Realtime AI</h2>
+                <h2>Dolphin0x</h2>
                 <div class="controls">
                     <div class="toggle-container">
-                        <span>🌐 Live Internet</span>
+                        <span>Web Toegang</span>
                         <label class="switch">
                             <input type="checkbox" id="internetToggle" checked>
                             <span class="slider"></span>
                         </label>
                     </div>
-                    <span id="status">Standby</span>
                 </div>
             </div>
 
             <div id="chatLog" class="chat-log">
-                <div class="msg ai">Dolphin0x is succesvol geactiveerd! 🤖 
-
-Ik ben een echte AI en reageer nu op **alles** wat je vraagt of zegt. Met de "Live Internet" schakelaar aan haal ik zelfs actuele info van het web! Tik een bericht of gebruik de microfoon.</div>
+                <div class="msg ai">Systeem online. ⚡<br><br>Ik ben uitgerust met een unieke stemmodule en realtime internettoegang. Zeg iets via de microfoon of typ een commando!</div>
+                <!-- Typ indicator (verborgen totdat bot nadenkt) -->
+                <div id="typingIndicator" class="typing-indicator">
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                    <div class="dot"></div>
+                </div>
             </div>
 
             <div class="input-area">
-                <button id="micBtn" class="btn btn-mic" onclick="toggleVoice()">🎙️</button>
-                <input type="text" id="userInput" class="text-input" placeholder="Stel een vraag over alles..." onkeypress="handleEnter(event)">
+                <button id="micBtn" class="btn-mic" onclick="toggleVoice()">🎙️</button>
+                <input type="text" id="userInput" class="text-input" placeholder="Wat wil je weten?..." onkeypress="handleEnter(event)">
                 <button class="btn btn-send" onclick="sendText()">Stuur</button>
-                <button class="btn btn-clear" onclick="clearLogs()">🗑️</button>
             </div>
         </div>
     </div>
@@ -102,31 +115,40 @@ Ik ben een echte AI en reageer nu op **alles** wat je vraagt of zegt. Met de "Li
         const synth = window.speechSynthesis;
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = SpeechRecognition ? new SpeechRecognition() : null;
+        let availableVoices = [];
+
+        // Laad alle stemmen in op de achtergrond
+        function loadVoices() {
+            availableVoices = synth.getVoices();
+        }
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
 
         let conversationHistory = [
-            { role: "system", content: "Je bent Dolphin0x, een vlijmscherpe, behulpzame AI-assistent gebouwd voor een slimme programmeur op een iPad. Antwoord altijd in natuurlijk, vloeiend Nederlands. Geef echte, kloppende antwoorden op alles wat gevraagd wordt. Het huidige jaar is 2026." }
+            { role: "system", content: "Je bent Dolphin0x, een super geavanceerde AI-assistent. Je spreekt in kort, bondig, en vloeiend Nederlands. Gebruik gerust Markdown (zoals **dikgedrukt** voor nadruk). Je hebt live internettoegang." }
         ];
 
-        // Deze functie start DIRECT op de knopdruk, waardoor de iPad de popup NIET blokkeert!
         async function activateAI() {
             try {
-                // Testbericht sturen om in te loggen/verbinden met Puter
-                await puter.ai.chat([{role: "user", content: "hello"}]);
-                
-                // Als dit lukt, schakelen we over naar het chatscherm
                 document.getElementById('authScreen').classList.remove('active');
                 document.getElementById('chatScreen').classList.add('active');
+                
+                // Laad stemmen direct bij activatie
+                loadVoices();
+                
+                // Een lege call om Puter wakker te maken
+                await puter.ai.chat([{role: "user", content: "ping"}]);
             } catch (err) {
-                alert("Activatie mislukt. Zorg dat je de pop-up toestaat op je iPad en probeer het nog een keer!");
-                console.error(err);
+                alert("Klik op 'Sta toe' als je een pop-up ziet om de AI te activeren!");
             }
         }
 
         if (recognition) {
             recognition.lang = 'nl-NL';
             recognition.interimResults = false;
-            recognition.onstart = () => setStatus("Luisteren...", "listening");
-            recognition.onend = () => setStatus("Standby");
+            recognition.onstart = () => document.getElementById('micBtn').classList.add('listening');
+            recognition.onend = () => document.getElementById('micBtn').classList.remove('listening');
             recognition.onresult = (e) => {
                 document.getElementById('userInput').value = e.results[0][0].transcript;
                 sendText();
@@ -146,9 +168,20 @@ Ik ben een echte AI en reageer nu op **alles** wat je vraagt of zegt. Met de "Li
             await processAI(text);
         }
 
-        // Veilige internet scraper die NOOIT de code laat crashen bij fouten
+        function showTyping(show) {
+            const indicator = document.getElementById('typingIndicator');
+            const log = document.getElementById('chatLog');
+            if (show) {
+                indicator.classList.add('active');
+                log.appendChild(indicator); // Zet hem altijd onderaan
+                log.scrollTop = log.scrollHeight;
+            } else {
+                indicator.classList.remove('active');
+            }
+        }
+
+        // Verbeterde, snellere web-scraper
         async function scrapeWeb(query) {
-            setStatus("Internet afzoeken...");
             try {
                 const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`)}`;
                 const response = await fetch(proxyUrl);
@@ -162,97 +195,100 @@ Ik ben een echte AI en reageer nu op **alles** wat je vraagt of zegt. Met de "Li
                 let snippets = [];
                 results.forEach((res, index) => {
                     if (index < 3) {
-                        const title = res.querySelector('.result__title')?.innerText?.trim() || '';
                         const snippet = res.querySelector('.result__snippet')?.innerText?.trim() || '';
-                        if (snippet) snippets.push(`- ${title}: ${snippet}`);
+                        if (snippet) snippets.push(`- ${snippet}`);
                     }
                 });
                 return snippets.length > 0 ? snippets.join("\n") : null;
             } catch (err) {
-                return null; // Faal geruisloos, zodat de AI in ieder geval antwoordt
+                return null; 
             }
         }
 
         async function processAI(userPrompt) {
-            setStatus("Nadenken...");
+            showTyping(true);
             const useInternet = document.getElementById('internetToggle').checked;
             let finalPrompt = userPrompt;
 
             if (useInternet) {
                 const webData = await scrapeWeb(userPrompt);
                 if (webData) {
-                    printSystem("Live internetdata toegevoegd.");
-                    finalPrompt = `[INTERNET CONTEXT]:\n${webData}\n\n[VRAAG]:\n${userPrompt}`;
+                    finalPrompt = `[LIVE INTERNET DATA DAT JE MOET GEBRUIKEN ALS HET HELPT]:\n${webData}\n\n[VRAAG]:\n${userPrompt}`;
                 }
             }
 
             conversationHistory.push({ role: "user", content: finalPrompt });
 
             try {
-                setStatus("Antwoord genereren...");
-                // De echte OpenAI engine achter de schermen, helemaal gratis via Puter
                 const response = await puter.ai.chat(conversationHistory, { model: 'openai/gpt-4o-mini' });
                 
                 let aiReply = "";
                 if (typeof response === 'string') aiReply = response;
                 else if (response?.message?.content) aiReply = response.message.content;
-                else if (response?.text) aiReply = response.text;
 
                 conversationHistory.push({ role: "assistant", content: aiReply });
 
+                showTyping(false);
                 printMessage('ai', aiReply);
                 speak(aiReply);
             } catch (error) {
-                printMessage('ai', "Er ging iets mis met het netwerk. Probeer je bericht nog eens te sturen!");
+                showTyping(false);
+                printMessage('ai', "Mijn netwerkverbinding haperde even. Kun je dat herhalen?");
             }
-            setStatus("Standby");
         }
 
+        // De Unieke Stem & Anti-Stotter Generator
         function speak(text) {
             if (!synth) return;
             synth.cancel();
-            const cleanText = text.replace(/[•*#_-]/g, '');
-            const utterance = new SpeechSynthesisUtterance(cleanText);
-            utterance.lang = 'nl-NL';
-            utterance.rate = 1.05; 
-            synth.speak(utterance);
+
+            // Verwijder markdown (sterretjes, hekjes) voor de spraakcomputer
+            let cleanText = text.replace(/[*#_]/g, '');
+
+            // FIX VOOR IPAD: Splits de tekst in zinnen. Safari stopt met praten bij zinnen langer dan ~15 seconden.
+            // Dit knipt de tekst netjes op bij elke punt, uitroepteken of vraagteken.
+            let sentences = cleanText.match(/[^.!?]+[.!?]+/g) || [cleanText];
+
+            // Zoek naar een toffe, unieke stem (nl-NL of nl-BE). 
+            let voice = availableVoices.find(v => v.lang === 'nl-BE') || // Belgisch klinkt vaak wat unieker/zachter
+                        availableVoices.find(v => v.lang === 'nl-NL' && !v.name.includes('Siri')) ||
+                        availableVoices.find(v => v.lang.includes('nl'));
+
+            sentences.forEach(sentence => {
+                let utterance = new SpeechSynthesisUtterance(sentence.trim());
+                if (voice) utterance.voice = voice;
+                
+                // DE UNIEKE MODIFICATIE: 
+                utterance.pitch = 0.85; // Iets donkerder/robuuster (standaard is 1.0)
+                utterance.rate = 1.05;  // Iets sneller praten
+                utterance.lang = 'nl-NL';
+
+                synth.speak(utterance);
+            });
         }
 
         function toggleVoice() {
-            if (!recognition) { alert("Spraakherkenning niet ondersteund op deze browserversie."); return; }
+            if (!recognition) { alert("Microfoon wordt niet ondersteund in deze app."); return; }
             if (synth.speaking) synth.cancel();
             recognition.start();
         }
 
+        // Markdown-naar-HTML parser voor mooie, dikgedrukte tekst in het scherm
+        function formatText(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        }
+
         function printMessage(role, text) {
             const log = document.getElementById('chatLog');
+            const indicator = document.getElementById('typingIndicator');
+            
             const div = document.createElement('div');
             div.className = `msg ${role}`;
-            div.innerText = text;
-            log.appendChild(div);
+            // Gebruik innerHTML zodat we HTML (zoals <strong>) kunnen renderen
+            div.innerHTML = role === 'ai' ? formatText(text) : text;
+            
+            log.insertBefore(div, indicator);
             log.scrollTop = log.scrollHeight;
-        }
-
-        function printSystem(text) {
-            const log = document.getElementById('chatLog');
-            const div = document.createElement('div');
-            div.className = 'msg system';
-            div.innerText = `🌐 ${text}`;
-            log.appendChild(div);
-            log.scrollTop = log.scrollHeight;
-        }
-
-        function setStatus(text, cssClass = "") {
-            document.getElementById('status').innerText = text;
-            const mic = document.getElementById('micBtn');
-            if (cssClass === "listening") { mic.classList.add('listening'); } else { mic.classList.remove('listening'); }
-        }
-
-        function clearLogs() {
-            document.getElementById('chatLog').innerHTML = '<div class="msg ai">Gesprek gereset. Stel me een nieuwe vraag!</div>';
-            conversationHistory = [conversationHistory[0]];
-            if (synth) synth.cancel();
-            setStatus("Standby");
         }
     </script>
 </body>
