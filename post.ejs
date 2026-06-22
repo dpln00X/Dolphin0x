@@ -1,0 +1,44 @@
+```html
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Post</title>
+<style>
+body{font-family:Arial;max-width:900px;margin:20px auto;padding:0 10px;}
+img{max-width:100%;height:auto;border-radius:8px;}
+.post{border:1px solid #ddd;padding:14px;border-radius:8px;}
+.comment{border-top:1px solid #eee;padding:10px 0;}
+textarea{width:100%;padding:10px;margin-top:8px;box-sizing:border-box;}
+button{padding:10px 12px;background:#222;color:#fff;border:0;border-radius:6px;cursor:pointer;}
+</style>
+</head>
+<body>
+<p><a href="/">← Terug</a></p>
+
+<div class="post">
+<h1><%= post.title %></h1>
+<p><%= post.content %></p>
+<% if (post.image_path) { %>
+<img src="<%= post.image_path %>"/>
+<% } %>
+<small><%= post.created_at %></small>
+</div>
+
+<h2>Reageer</h2>
+<form method="POST" action="/comment">
+<input type="hidden" name="postId" value="<%= post.id %>"/>
+<textarea name="content" rows="3" placeholder="Typ je reactie..."></textarea>
+<button type="submit">Plaats reactie</button>
+</form>
+
+<h2>Reacties</h2>
+<% comments.forEach(c => { %>
+<div class="comment">
+<p><%= c.content %></p>
+<small><%= c.created_at %></small>
+</div>
+<% }) %>
+</body>
+</html>
+```
