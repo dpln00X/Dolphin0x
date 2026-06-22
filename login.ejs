@@ -1,0 +1,24 @@
+```html
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Admin login</title>
+<style>
+body{font-family:Arial;max-width:500px;margin:40px auto;padding:0 10px;}
+input{width:100%;padding:10px;margin:6px 0;box-sizing:border-box;}
+button{padding:10px 12px;background:#222;color:#fff;border:0;border-radius:6px;cursor:pointer;width:100%;}
+.err{color:#c00;}
+</style>
+</head>
+<body>
+<h1>Admin login</h1>
+<% if (error) { %><p class="err"><%= error %></p><% } %>
+<form method="POST" action="/admin/login">
+<input name="username" placeholder="Username" />
+<input name="password" type="password" placeholder="Password" />
+<button type="submit">Login</button>
+</form>
+</body>
+</html>
+```
