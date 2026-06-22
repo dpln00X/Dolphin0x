@@ -3,23 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Dolphin0x | Smart iPad AI</title>
+    <title>Dolphin0x | Unlimited iPad AI</title>
+    <script src="https://js.puter.com/v2/"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         body { margin: 0; padding: 0; background-color: #0f172a; color: #e2e8f0; display: flex; justify-content: center; align-items: center; height: 100vh; }
         
-        .chat-container { width: 100%; max-width: 650px; height: 95vh; background-color: #1e293b; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden; border: 1px solid #334155; }
+        .chat-container { width: 100%; max-width: 750px; height: 95vh; background-color: #1e293b; border-radius: 20px; display: flex; flex-direction: column; box-shadow: 0 10px 30px rgba(0,0,0,0.4); overflow: hidden; border: 1px solid #334155; }
         
-        .chat-header { padding: 20px; background-color: #0f172a; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-        .chat-header h2 { margin: 0; font-size: 1.4rem; color: #38bdf8; font-weight: 700; }
+        .chat-header { padding: 16px 20px; background-color: #0f172a; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .chat-header h2 { margin: 0; font-size: 1.3rem; color: #38bdf8; font-weight: 700; }
         
-        #status { font-size: 0.85rem; color: #94a3b8; background: #334155; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
+        .controls { display: flex; align-items: center; gap: 15px; }
+        .toggle-container { display: flex; align-items: center; gap: 6px; font-size: 0.9rem; font-weight: 600; color: #94a3b8; }
+        
+        /* Premium Switch Button */
+        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #475569; transition: .3s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .3s; border-radius: 50%; }
+        input:checked + .slider { background-color: #a855f7; }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        #status { font-size: 0.85rem; color: #e2e8f0; background: #334155; padding: 6px 12px; border-radius: 20px; font-weight: 600; }
         .chat-log { flex-grow: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; background-color: #0f172a; }
         
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 18px; line-height: 1.6; font-size: 1rem; white-space: pre-line; }
+        .msg { max-width: 85%; padding: 14px 18px; border-radius: 18px; line-height: 1.6; font-size: 1rem; white-space: pre-line; }
         .msg.user { align-self: flex-end; background-color: #38bdf8; color: #0f172a; font-weight: 500; border-bottom-right-radius: 4px; }
         .msg.ai { align-self: flex-start; background-color: #1e293b; color: #e2e8f0; border-bottom-left-radius: 4px; border: 1px solid #334155; }
-        .msg.system { align-self: center; background-color: #334155; color: #94a3b8; font-size: 0.85rem; border-radius: 10px; padding: 6px 14px; text-align: center; }
+        .msg.system { align-self: center; background-color: #334155; color: #cbd5e1; font-size: 0.85rem; border-radius: 10px; padding: 6px 14px; text-align: center; max-width: 90%; }
 
         .input-area { padding: 20px; background-color: #1e293b; display: flex; gap: 12px; border-top: 1px solid #334155; align-items: center; }
         .text-input { flex-grow: 1; background-color: #0f172a; border: 1px solid #334155; border-radius: 30px; padding: 0 20px; color: white; font-size: 1rem; height: 48px; outline: none; }
@@ -38,19 +50,28 @@
 
     <div class="chat-container">
         <div class="chat-header">
-            <h2>Dolphin0x Companion</h2>
-            <span id="status">Standby</span>
+            <h2>Dolphin0x Realtime AI</h2>
+            <div class="controls">
+                <div class="toggle-container">
+                    <span>🌐 Internet Zoeken</span>
+                    <label class="switch">
+                        <input type="checkbox" id="internetToggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <span id="status">Standby</span>
+            </div>
         </div>
 
         <div id="chatLog" class="chat-log">
-            <div class="msg ai">Hallo! Ik ben Dolphin0x, jouw persoonlijke AI-assistent. Ik heb geen internet-keys nodig en draai volledig lokaal op je iPad. 
+            <div class="msg ai">Dolphin0x is opgestart via Puter.js! 🚀 
 
-Tik een bericht of klik op de microfoon om tegen me te praten!</div>
+Ik kan nu op **alles** reageren wat je vraagt. Als je de schakelaar 'Internet Zoeken' aan laat staan, haal ik live informatie van het web voor actuele vragen. Klik op de microfoon om te praten!</div>
         </div>
 
         <div class="input-area">
             <button id="micBtn" class="btn btn-mic" onclick="toggleVoice()">🎙️</button>
-            <input type="text" id="userInput" class="text-input" placeholder="Stel een vraag..." onkeypress="handleEnter(event)">
+            <input type="text" id="userInput" class="text-input" placeholder="Stel een vraag over alles..." onkeypress="handleEnter(event)">
             <button class="btn btn-send" onclick="sendText()">Stuur</button>
             <button class="btn btn-clear" onclick="clearLogs()">🗑️</button>
         </div>
@@ -60,6 +81,11 @@ Tik een bericht of klik op de microfoon om tegen me te praten!</div>
         const synth = window.speechSynthesis;
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         let recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
+        // Dit houdt het lopende gesprek live bij in het geheugen
+        let conversationHistory = [
+            { role: "system", content: "Je bent Dolphin0x, een slimme, behulpzame AI-assistent gebouwd voor een creatieve programmeur en scholier op een iPad. Antwoord altijd in vloeiend, natuurlijk Nederlands. Wees to-the-point maar geef complete antwoorden. Het huidige jaar is 2026. Als de gebruiker internet-context meestuurt, gebruik die dan om accuraat te antwoorden." }
+        ];
 
         if (recognition) {
             recognition.lang = 'nl-NL';
@@ -74,80 +100,101 @@ Tik een bericht of klik op de microfoon om tegen me te praten!</div>
 
         function handleEnter(e) { if (e.key === 'Enter') sendText(); }
 
-        function sendText() {
+        async function sendText() {
             const input = document.getElementById('userInput');
             const text = input.value.trim();
             if (!text) return;
             
             input.value = '';
             printMessage('user', text);
-            setStatus("Nadenken...");
             
-            // Simuleer korte denktijd voor realismen
-            setTimeout(() => { processSmartBot(text); }, 500);
+            await processAI(text);
         }
 
-        // Het ingebouwde lokale brein dat super-accuraat reageert op jouw onderwerpen
-        function processSmartBot(prompt) {
-            const text = prompt.toLowerCase();
-            let reply = "Interessante vraag! Ik ben speciaal geprogrammeerd om je te helpen met code, schoolopdrachten, vissen of biologie. Kun je je vraag iets specifieker stellen?";
+        // De internet-scraper via een gratis, sleutelloos CORS-tussenstation
+        async function scrapeWeb(query) {
+            setStatus("Internet afzoeken...");
+            try {
+                const proxyUrl = `https://corsproxy.io/?${encodeURIComponent(`https://html.duckduckgo.com/html/?q=${encodeURIComponent(query)}`)}`;
+                const response = await fetch(proxyUrl);
+                if (!response.ok) return null;
+                
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                const results = doc.querySelectorAll('.result__body');
+                
+                let snippets = [];
+                results.forEach((res, index) => {
+                    if (index < 3) { // Pak de top 3 beste resultaten van het web
+                        const title = res.querySelector('.result__title')?.innerText?.trim() || '';
+                        const snippet = res.querySelector('.result__snippet')?.innerText?.trim() || '';
+                        if (snippet) snippets.push(`- ${title}: ${snippet}`);
+                    }
+                });
+                return snippets.length > 0 ? snippets.join("\n") : null;
+            } catch (err) {
+                console.error("Scrape fout:", err);
+                return null;
+            }
+        }
 
-            // 1. Groeten & Algemeen
-            if (text.includes("hallo") || text.includes("hey") || text.includes("hi ") || text.trim() === "hi") {
-                reply = "Hey! Leuk dat je er bent. Waar gaan we vandaag mee aan de slag? Code kraken, schoolprojecten uitwerken of praten over je hobby's?";
-            } else if (text.includes("wie ben jij") || text.includes("jouw naam") || text.includes("wat ben jij")) {
-                reply = "Ik ben Dolphin0x, een speciaal voor jouw iPad geoptimaliseerde AI-bot. Ik reageer razendsnel en heb geen externe servers of API-sleutels nodig!";
-            } else if (text.includes("hoe gaat het") || text.includes("alles goed")) {
-                reply = "Met mij gaat het uitstekend! Mijn code draait soepel op je iPad. Hoe gaat het met jou en je projecten?";
+        async function processAI(userPrompt) {
+            setStatus("Nadenken...");
+            const useInternet = document.getElementById('internetToggle').checked;
+            let finalPrompt = userPrompt;
+
+            // Als internet aanstaat, halen we live data op voordat we de AI aanroepen
+            if (useInternet) {
+                const webData = await scrapeWeb(userPrompt);
+                if (webData) {
+                    printSystem("Live internetdata toegevoegd aan brein.");
+                    finalPrompt = `[GEBRUIK DEZE LIVE INTERNET INFORMATIE OM DE VRAAG TE BEANTWOORDEN]:\n${webData}\n\n[VRAAG GEBRUIKER]:\n${userPrompt}`;
+                }
             }
 
-            // 2. Microcontrollers & Programmeren
-            else if (text.includes("arduino") || text.includes("esp32") || text.includes("microcontroller") || text.includes("code") || text.includes("led")) {
-                reply = "Als je werkt met microcontrollers zoals de ESP32 of Arduino, is de basisstructuur altijd cruciaal:\n\n• `void setup()` gebruikt u om pinnen in te stellen, zoals `pinMode(2, OUTPUT);`.\n• `void loop()` blijft oneindig herhalen. \n\nVergeet bij de ESP32 niet dat de pinnen op 3.3V werken in plaats van de 5V van de meeste Arduino's! Wat ben je momenteel aan het bouwen?";
-            } else if (text.includes("html") || text.includes("css") || text.includes("javascript") || text.includes("website")) {
-                reply = "Webontwikkeling is fantastisch! Met HTML bouw je de muren van je site, met CSS geef je het een strakke look (net als dit donkere thema) en met JavaScript maak je het interactief. Tip voor je code: gebruik altijd `console.log()` om fouten snel op te sporen in je browser.";
-            }
+            // Voeg de vraag toe aan de geschiedenis
+            conversationHistory.push({ role: "user", content: finalPrompt });
 
-            // 3. School & Werkstukken (Siberische Tijger & Economie)
-            else if (text.includes("tijger") || text.includes("siberische") || text.includes("werkstuk") || text.includes("presentatie")) {
-                reply = "Voor je presentatie of werkstuk over de Siberische tijger (Panthera tigris altaica) zijn dit de belangrijkste feiten die absoluut kloppen:\n\n• Leefgebied: De dichte, ijzige bossen in het oosten van Rusland (Siberië) en delen van China.\n• Aanpassing: Ze hebben een dikkere vacht en een dikke vetlaag tegen de extreme kou.\n• Status: Het is een bedreigde diersoort. Er leven er nog maar zo'n 500 tot 600 in het wild.\n• Dieet: Het zijn apexpredatoren die jagen op wilde zwijnen en herten.";
-            } else if (text.includes("economie") || text.includes("geld") || text.includes("munt") || text.includes("valuta")) {
-                reply = "Bij een economieproject is het handig om landen goed te vergelijken op basis van hun munteenheid (valuta) en bruto binnenlands product (BBP). Let er altijd op dat wisselkoersen dagelijks veranderen. Heb je hulp nodig bij het structureren van een tabel of overzicht voor je opdracht?";
-            }
+            try {
+                setStatus("Antwoord genereren...");
+                // We roepen Puter AI aan zonder keys! We gebruiken het betrouwbare gpt-4o-mini model
+                const response = await puter.ai.chat(conversationHistory, { model: 'openai/gpt-4o-mini' });
+                
+                // Veilig de tekst uit de Puter-respons vissen
+                let aiReply = "";
+                if (typeof response === 'string') aiReply = response;
+                else if (response?.message?.content) aiReply = response.message.content;
+                else if (response?.text) aiReply = response.text;
+                else aiReply = JSON.stringify(response);
 
-            // 4. Vissen & Aquariums (Corydoras & Hengelsport)
-            else if (text.includes("corydoras") || text.includes("vis") || text.includes("aquarium") || text.includes("algen")) {
-                reply = "Wat betreft aquariums en visverzorging:\n\n• Corydoras: Dit zijn geweldige bodembewoners (meervalletjes). Ze houden van een zandbodem zodat ze hun gevoelige baarddraden niet beschadigen bij het grondelen. \n• Kweek: Als ze eitjes afzetten (vaak tegen het glas na een flinke waterverversing met iets koeler water), kun je ze het beste apart zetten in een kweekbakje met veel zuurstof en stroming om te zorgen dat de eitjes niet gaan schimmelen.";
-            } else if (text.includes("vissen") || text.includes("hengel") || text.includes("maas") || text.includes("elburg") || text.includes("wind") || text.includes("brasem")) {
-                reply = "Voor een succesvolle visdag (bijvoorbeeld op de Maas, het Drontermeer of rond Elburg):\n\n• Winde: Deze sterke sportvis houdt van stroming en reageert super goed op maden, casters of kleine spinners vlak onder het oppervlak.\n• Brasem: Richt je juist op de bodem met een feederhengel en wat zwaarder grondvoer.\n• Materiaal: Zorg dat je slip goed staat afgesteld op je werpmolen, zodat een sterke vis je lijn niet zomaar doormidden trekt!";
-            }
+                // Voeg het antwoord van de AI toe aan de geschiedenis zodat hij de context onthoudt
+                conversationHistory.push({ role: "assistant", content: aiReply });
 
-            // 5. Gaming (Mortal Online 2 enz)
-            else if (text.includes("mortal") || text.includes("craften") || text.includes("granium") || text.includes("saburra") || text.includes("mining")) {
-                reply = "In hardcore survivalgames draait alles om grondstoffen. Als je ertsen zoals Granium of Saburra gaat mijnen, moet je deze daarna extracten in een crusher of molen om de waardevolle metalen en materialen eruit te halen. Zorg dat je je extraction skills hoog hebt levelen om zo min mogelijk kostbaar materiaal te verspillen!";
+                printMessage('ai', aiReply);
+                speak(aiReply);
+            } catch (error) {
+                console.error(error);
+                printMessage('ai', "Er ging iets mis bij het praten met het AI-netwerk. Probeer het nog eens!");
             }
-
-            printMessage('ai', reply);
-            speak(reply);
             setStatus("Standby");
         }
 
+        // Hardop praten via de iPad-luidspreker
         function speak(text) {
             if (!synth) return;
             synth.cancel();
             
-            // Maak de tekst iets schoner voor de spraakcomputer
-            const cleanText = text.replace(/[•*#]/g, '').substring(0, 350);
+            // Haal vreemde tekens weg voor een vloeiende stem
+            const cleanText = text.replace(/[•*#_-]/g, '');
             const utterance = new SpeechSynthesisUtterance(cleanText);
             utterance.lang = 'nl-NL';
-            utterance.pitch = 1.0;
-            utterance.rate = 1.05; // Iets vlotter praten op iPad klinkt natuurlijker
-            
+            utterance.rate = 1.05; 
             synth.speak(utterance);
         }
 
         function toggleVoice() {
-            if (!recognition) { alert("Spraakherkenning wordt helaas niet ondersteund in deze browserversie."); return; }
+            if (!recognition) { alert("Spraakherkenning wordt niet ondersteund in deze browserversie."); return; }
             if (synth.speaking) synth.cancel();
             recognition.start();
         }
@@ -161,6 +208,15 @@ Tik een bericht of klik op de microfoon om tegen me te praten!</div>
             log.scrollTop = log.scrollHeight;
         }
 
+        function printSystem(text) {
+            const log = document.getElementById('chatLog');
+            const div = document.createElement('div');
+            div.className = 'msg system';
+            div.innerText = `🌐 Sync: ${text}`;
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+        }
+
         function setStatus(text, cssClass = "") {
             document.getElementById('status').innerText = text;
             const mic = document.getElementById('micBtn');
@@ -168,7 +224,8 @@ Tik een bericht of klik op de microfoon om tegen me te praten!</div>
         }
 
         function clearLogs() {
-            document.getElementById('chatLog').innerHTML = '<div class="msg ai">Systeem gereset. Vraag me gerust iets nieuws!</div>';
+            document.getElementById('chatLog').innerHTML = '<div class="msg ai">Gesprek gewist. Stel me een nieuwe vraag!</div>';
+            conversationHistory = [conversationHistory[0]]; // Reset geschiedenis behalve systeem prompt
             if (synth) synth.cancel();
             setStatus("Standby");
         }
