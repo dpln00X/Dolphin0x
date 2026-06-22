@@ -1,0 +1,21 @@
+{
+  "name": "ai-voice-chatbot",
+  "version": "1.0.0",
+  "description": "A real AI voice chatbot with browser speech input/output and optional microcontroller serial connection.",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@serialport/parser-readline": "^12.0.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "openai": "^4.77.0",
+    "serialport": "^12.0.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
