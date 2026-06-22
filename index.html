@@ -1,69 +1,72 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chatbot</title>
-    <style>
-        body { font-family: Arial, sans-serif; }
-        #chatbox { width: 300px; height: 400px; border: 1px solid #ccc; overflow-y: scroll; padding: 10px; }
-        #userInput { width: 100%; }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ava AI Voice Chatbot</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <main class="app">
+    <header>
+      <div>
+        <h1>Ava AI Voice Chatbot</h1>
+        <p class="subtitle">Talk by typing or using your microphone. Ava answers with text and a real computer voice. You can also connect an Arduino, ESP32, or other serial microcontroller.</p>
+      </div>
+      <div id="status" class="status-pill">Starting...</div>
+    </header>
 
-<h1>AI Chatbot</h1>
-<div id="chatbox"></div>
-<input type="text" id="userInput" placeholder="Type your message here..." />
-<button id="sendBtn">Send</button>
-<button id="activateBtn">Activate Voice</button>
+    <section class="grid">
+      <div class="card chat-card">
+        <div id="chatLog" class="chat-log"></div>
+        <div class="controls">
+          <div class="input-row">
+            <textarea id="messageInput" placeholder="Type a message, or press Start Talking..."></textarea>
+            <button id="sendBtn">Send</button>
+          </div>
+          <div class="button-row">
+            <button id="talkBtn" class="secondary">🎙️ Start Talking</button>
+            <button id="stopTalkBtn" class="secondary">Stop Listening</button>
+            <button id="muteBtn" class="secondary">🔊 Voice On</button>
+            <select id="voiceSelect" title="Voice"></select>
+          </div>
+        </div>
+      </div>
 
-<script>
-    const chatbox = document.getElementById('chatbox');
-    const userInput = document.getElementById('userInput');
-    const sendBtn = document.getElementById('sendBtn');
-    const activateBtn = document.getElementById('activateBtn');
+      <aside class="side">
+        <div class="card panel">
+          <h2>Voice Settings</h2>
+          <p class="small">Microphone input works in Chrome/Edge using the browser Speech Recognition API. Spoken answers use your system/browser voices.</p>
+          <label class="small" for="rateRange">Voice speed</label>
+          <input id="rateRange" type="range" min="0.6" max="1.4" step="0.1" value="1" />
+        </div>
 
-    sendBtn.addEventListener('click', () => {
-        const userMessage = userInput.value;
-        if (userMessage.trim() === "") {
-            alert("Please enter a message.");
-            return;
-        }
-        appendMessage("You: " + userMessage);
-        getResponse(userMessage);
-        userInput.value = "";
-    });
+        <div class="card panel">
+          <h2>Microcontroller</h2>
+          <p id="serialStatus" class="small">Checking serial status...</p>
+          <div class="serial-row">
+            <input id="serialPort" placeholder="Serial port, e.g. COM3 or /dev/ttyUSB0" />
+            <input id="serialBaud" value="9600" inputmode="numeric" />
+          </div>
+          <div class="button-row" style="margin-top:10px;">
+            <button id="connectSerialBtn" class="secondary">Connect</button>
+            <button id="refreshSerialBtn" class="secondary">Refresh</button>
+          </div>
+          <div class="serial-row" style="margin-top:10px;">
+            <input id="serialCommand" placeholder="Command, e.g. LED_ON" />
+            <button id="sendSerialBtn">Send</button>
+          </div>
+          <pre id="serialLog" class="serial-log"></pre>
+        </div>
 
-    activateBtn.addEventListener('click', () => {
-        // Placeholder for voice activation logic
-        appendMessage("Chatbot is now activated for voice interaction.");
-    });
+        <div class="card panel">
+          <h2>Example Commands</h2>
+          <p class="small">Try: “Explain photosynthesis simply.” “Write Arduino code to blink an LED.” “Send LED_ON to the microcontroller.” For physical control, connect your board and type the exact command in the microcontroller box.</p>
+        </div>
+      </aside>
+    </section>
+  </main>
 
-    function appendMessage(message) {
-        const messageElement = document.createElement('div');
-        messageElement.textContent = message;
-        chatbox.appendChild(messageElement);
-        chatbox.scrollTop = chatbox.scrollHeight; // Auto-scroll to the bottom
-    }
-
-    function getResponse(userMessage) {
-        try {
-            // Simulated response logic
-            let response = "I'm not sure how to respond to that.";
-            if (userMessage.toLowerCase().includes("hello")) {
-                response = "Hello! How can I assist you today?";
-            } else if (userMessage.toLowerCase().includes("control")) {
-                response = "What would you like to control?";
-                // Here you would add logic to communicate with the microcontroller
-            }
-            appendMessage("Chatbot: " + response);
-        } catch (error) {
-            console.error("Error occurred while getting response:", error);
-            appendMessage("Chatbot: Sorry, I encountered an error while processing your request.");
-        }
-    }
-</script>
-
+  <script src="app.js"></script>
 </body>
 </html>
