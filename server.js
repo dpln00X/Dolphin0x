@@ -1,5 +1,7 @@
 ```js
 // server.js
+require("dotenv").config();
+
 const express = require("express");
 const session = require("express-session");
 const multer = require("multer");
@@ -11,7 +13,6 @@ const Database = require("better-sqlite3");
 const app = express();
 const db = new Database("database.sqlite");
 
-// Tabellen (blijven bestaan in database.sqlite)
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -36,9 +37,14 @@ FOREIGN KEY(post_id) REFERENCES posts(id)
 );
 `);
 
-// Special admin login (alleen dit kan posten)
-const ADMIN_USER = "specialAdmin";
-const ADMIN_PASS = "admin123"; // <-- wijzig dit
+const ADMIN_USER = process.env.ADMIN_USER;
+const ADMIN_PASS = process.env.ADMIN_PASS;
+const SESSION_SECRET = process.env.SESSION_SECRET || "maak-een-stevige-secret";
+
+if (!ADMIN_USER || !ADMIN_PASS) {
+console.error("Fout: ADMIN_USER of ADMIN_PASS ontbreekt in .env");
+process.exit(1);
+}
 
 const existing = db.prepare("SELECT * FROM users WHERE username=?").get(ADMIN_USER);
 if (!existing) {
@@ -51,7 +57,7 @@ app.use(express.json());
 
 app.use(
 session({
-secret: "maak-een-stevige-secret",
+secret: SESSION_SECRET,
 resave: false,
 saveUninitialized: false,
 })
@@ -110,3 +116,29 @@ title,
 content,
 imagePath
 );
+
+res.redirect("/");
+});
+
+app.post("/comment", (req, res) => {
+const { postId, content } = req.body;
+if (!content) return res.status(400).send("Bericht is verplicht.");
+
+db.prepare("INSERT INTO comments (post_id, content) VALUES (?,?)").run(postId, content);
+res.redirect(`/post/${postId}`);
+});
+
+app.get("/post/:id", (req, res) => {
+const post = db.prepare("SELECT * FROM posts WHERE id=?").get(req.params.id);
+if (!post) return res.status(404).send("Post niet gevonden.");
+
+const comments = db
+.prepare("SELECT * FROM comments WHERE post_id=? ORDER BY id ASC")
+.all(req.params.id);
+
+res.render("post", { post, comments });
+});
+
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Ga naar http://localhost:${PORT}`));
+```
