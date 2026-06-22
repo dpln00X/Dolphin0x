@@ -1,5 +1,4 @@
 ```js
-// server.js
 require("dotenv").config();
 
 const express = require("express");
@@ -11,7 +10,12 @@ const fs = require("fs");
 const Database = require("better-sqlite3");
 
 const app = express();
-const db = new Database("database.sqlite");
+
+// Persistent storage (liefst op Render; valt terug naar projectmap)
+const storageDir = process.env.STORAGE_DIR || __dirname;
+fs.mkdirSync(path.join(storageDir, "uploads"), { recursive: true });
+
+const db = new Database(path.join(storageDir, "database.sqlite"));
 
 db.exec(`
 CREATE TABLE IF NOT EXISTS users (
@@ -39,13 +43,14 @@ FOREIGN KEY(post_id) REFERENCES posts(id)
 
 const ADMIN_USER = process.env.ADMIN_USER;
 const ADMIN_PASS = process.env.ADMIN_PASS;
-const SESSION_SECRET = process.env.SESSION_SECRET || "maak-een-stevige-secret";
+const SESSION_SECRET = process.env.SESSION_SECRET || "secret";
 
 if (!ADMIN_USER || !ADMIN_PASS) {
-console.error("Fout: ADMIN_USER of ADMIN_PASS ontbreekt in .env");
+console.error("Missing ADMIN_USER/ADMIN_PASS in .env");
 process.exit(1);
 }
 
+// Zet admin user aan als die nog niet bestaat
 const existing = db.prepare("SELECT * FROM users WHERE username=?").get(ADMIN_USER);
 if (!existing) {
 const hash = bcrypt.hashSync(ADMIN_PASS, 10);
@@ -63,13 +68,15 @@ saveUninitialized: false,
 })
 );
 
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Uploads static
+const uploadsPublic = path.join(storageDir, "uploads");
+app.use("/uploads", express.static(uploadsPublic));
+
+// Multer: upload naar persistent dir
+const upload = multer({ dest: uploadsPublic });
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-
-fs.mkdirSync("uploads", { recursive: true });
-const upload = multer({ dest: "uploads/" });
 
 function requireAdmin(req, res, next) {
 if (req.session && req.session.admin === true) return next();
@@ -81,9 +88,7 @@ const posts = db.prepare("SELECT * FROM posts ORDER BY id DESC").all();
 res.render("index", { posts });
 });
 
-app.get("/admin/login", (req, res) => {
-res.render("login", { error: "" });
-});
+app.get("/admin/login", (req, res) => res.render("login", { error: "" }));
 
 app.post("/admin/login", (req, res) => {
 const { username, password } = req.body;
@@ -101,15 +106,13 @@ app.get("/admin/logout", (req, res) => {
 req.session.destroy(() => res.redirect("/"));
 });
 
-app.get("/admin", requireAdmin, (req, res) => {
-res.render("admin", { error: "" });
-});
+app.get("/admin", requireAdmin, (req, res) => res.render("admin", { error: "" }));
 
 app.post("/admin/post", requireAdmin, upload.single("image"), (req, res) => {
 const { title, content } = req.body;
-const imagePath = req.file ? `/uploads/${path.basename(req.file.path)}` : null;
-
 if (!title || !content) return res.status(400).send("Titel en tekst zijn verplicht.");
+
+const imagePath = req.file ? `/uploads/${path.basename(req.file.path)}` : null;
 
 db.prepare("INSERT INTO posts (title, content, image_path) VALUES (?,?,?)").run(
 title,
